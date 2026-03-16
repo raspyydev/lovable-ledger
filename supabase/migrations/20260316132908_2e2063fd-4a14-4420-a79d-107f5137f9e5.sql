@@ -1,4 +1,7 @@
--- Create kategorien table
+-- Ledger / Kleinunternehmer Buchhaltung (Einnahmen, Ausgaben, Kategorien)
+-- All tables and policies required for the app; run once on fresh DB.
+
+-- Kategorien (Einnahme- und Ausgabe-Kategorien)
 CREATE TABLE public.kategorien (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -7,7 +10,12 @@ CREATE TABLE public.kategorien (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Create einnahmen table
+CREATE INDEX idx_kategorien_typ ON public.kategorien (typ);
+CREATE INDEX idx_kategorien_created_at ON public.kategorien (created_at);
+
+COMMENT ON TABLE public.kategorien IS 'Kategorien für Einnahmen und Ausgaben (Kleinunternehmer Ledger)';
+
+-- Einnahmen (Umsatz = Brutto, Kleinunternehmer §19 UStG)
 CREATE TABLE public.einnahmen (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   datum DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -19,7 +27,12 @@ CREATE TABLE public.einnahmen (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Create ausgaben table
+CREATE INDEX idx_einnahmen_datum ON public.einnahmen (datum DESC);
+CREATE INDEX idx_einnahmen_kategorie ON public.einnahmen (kategorie);
+
+COMMENT ON TABLE public.einnahmen IS 'Einnahmen (Rechnungsbetrag/Umsatz); Kleinunternehmer ohne USt-Ausweis';
+
+-- Ausgaben (Betriebsausgaben inkl. USt-Felder; Kleinunternehmer: kein Vorsteuerabzug, Brutto = Aufwand)
 CREATE TABLE public.ausgaben (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   datum DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -35,12 +48,17 @@ CREATE TABLE public.ausgaben (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Enable RLS
+CREATE INDEX idx_ausgaben_datum ON public.ausgaben (datum DESC);
+CREATE INDEX idx_ausgaben_kategorie ON public.ausgaben (kategorie);
+
+COMMENT ON TABLE public.ausgaben IS 'Ausgaben (Betriebsausgaben); Netto, USt%, USt-Betrag, Brutto für Gewinnberechnung';
+
+-- Row Level Security (RLS)
 ALTER TABLE public.kategorien ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.einnahmen ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ausgaben ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ausgaben ENABLE ROW LEVEL SECURITY; 
 
--- Public access policies
+-- Policies: full public CRUD (app uses anon key; restrict in production via auth if needed)
 CREATE POLICY "Public read kategorien" ON public.kategorien FOR SELECT USING (true);
 CREATE POLICY "Public insert kategorien" ON public.kategorien FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public update kategorien" ON public.kategorien FOR UPDATE USING (true);
@@ -56,7 +74,7 @@ CREATE POLICY "Public insert ausgaben" ON public.ausgaben FOR INSERT WITH CHECK 
 CREATE POLICY "Public update ausgaben" ON public.ausgaben FOR UPDATE USING (true);
 CREATE POLICY "Public delete ausgaben" ON public.ausgaben FOR DELETE USING (true);
 
--- Insert default kategorien
+-- Default-Kategorien (wie in App DEFAULT_KATEGORIEN; Einnahmen + Ausgaben)
 INSERT INTO public.kategorien (name, typ, farbe) VALUES
   ('Webdesign', 'einnahme', '210 100% 50%'),
   ('Beratung', 'einnahme', '190 100% 42%'),
