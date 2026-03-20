@@ -27,6 +27,7 @@ export type Database = {
           netto: number
           ust_betrag: number
           ust_prozent: number
+          user_id: string | null
           zahlungsart: string
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           netto?: number
           ust_betrag?: number
           ust_prozent?: number
+          user_id?: string | null
           zahlungsart?: string
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           netto?: number
           ust_betrag?: number
           ust_prozent?: number
+          user_id?: string | null
           zahlungsart?: string
         }
         Relationships: []
@@ -68,6 +71,7 @@ export type Database = {
           datum: string
           id: string
           kategorie: string
+          user_id: string | null
           zahlungsart: string
         }
         Insert: {
@@ -78,6 +82,7 @@ export type Database = {
           datum?: string
           id?: string
           kategorie?: string
+          user_id?: string | null
           zahlungsart?: string
         }
         Update: {
@@ -88,6 +93,7 @@ export type Database = {
           datum?: string
           id?: string
           kategorie?: string
+          user_id?: string | null
           zahlungsart?: string
         }
         Relationships: []
@@ -99,6 +105,7 @@ export type Database = {
           id: string
           name: string
           typ: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -106,6 +113,7 @@ export type Database = {
           id?: string
           name: string
           typ: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -113,6 +121,7 @@ export type Database = {
           id?: string
           name?: string
           typ?: string
+          user_id?: string | null
         }
         Relationships: []
       }

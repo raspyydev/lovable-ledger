@@ -24,15 +24,15 @@ export default function KategorienTab({ kategorien, onAdd, onDelete }: Props) {
   const ausgabeKats = kategorien.filter(k => k.typ === 'ausgabe');
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-medium tracking-tight text-foreground">Kategorien</h2>
-        <p className="text-sm text-muted-foreground">
+    <div className="space-y-5 md:space-y-6">
+      <div className="space-y-1.5">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Kategorien</h2>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Better Studio sortiert über Kategorien — dein Co-Pilot bleibt lesbar, egal wie viele Streams du fährst.
         </p>
       </div>
 
-      <form onSubmit={handleAdd} className="shadow-card rounded-lg bg-card p-4 flex gap-3 items-end">
+      <form onSubmit={handleAdd} className="shadow-card flex flex-col gap-3 rounded-xl border border-border/40 bg-card p-4 sm:flex-row sm:items-end sm:gap-4 md:p-5">
         <div className="flex-1 space-y-1">
           <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Name</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
@@ -46,27 +46,27 @@ export default function KategorienTab({ kategorien, onAdd, onDelete }: Props) {
             <option value="ausgabe">Ausgabe</option>
           </select>
         </div>
-        <button type="submit" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Hinzufügen
+        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90">
+          <Plus className="h-4 w-4" /> Hinzufügen
         </button>
       </form>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-5">
         {[{ title: 'Einnahmen · Umsatz-Topf', items: einnahmeKats, color: 'text-success' },
           { title: 'Ausgaben · Studio-Kosten', items: ausgabeKats, color: 'text-destructive' }].map(group => (
-          <div key={group.title} className="shadow-card rounded-lg bg-card overflow-hidden">
-            <div className="px-4 py-3 border-b border-border/50">
-              <h3 className={`text-sm font-medium ${group.color}`}>{group.title}</h3>
+          <div key={group.title} className="shadow-card overflow-hidden rounded-xl border border-border/40 bg-card">
+            <div className="border-b border-border/50 px-4 py-3 sm:px-5">
+              <h3 className={`text-sm font-semibold sm:text-base ${group.color}`}>{group.title}</h3>
             </div>
             <div className="divide-y divide-border/30">
               <AnimatePresence>
                 {group.items.map(k => (
                   <motion.div key={k.id}
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
+                    className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/50 sm:px-5">
+                    <div className="flex items-center gap-2.5">
                       <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-sm">{k.name}</span>
+                      <span className="text-sm font-medium sm:text-base">{k.name}</span>
                     </div>
                     <button onClick={() => onDelete(k.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
                       <Trash2 className="w-3.5 h-3.5" />

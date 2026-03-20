@@ -1,38 +1,26 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowDownUp,
   BarChart3,
   BookOpen,
+  CalendarDays,
   Landmark,
+  LayoutDashboard,
   LogOut,
+  Menu,
   PieChart,
   Sparkles,
   Tag,
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useBookkeepingStore } from "@/lib/store";
 import type { TabId } from "@/lib/types";
 import EinnahmenTab from "@/components/buchhaltung/EinnahmenTab";
@@ -72,6 +60,88 @@ const pageMeta: Record<TabId, { title: string; subtitle: string }> = {
   },
 };
 
+function SidebarNavPanel({
+  activeTab,
+  onSelect,
+  user,
+  onSignOut,
+  afterNavigate,
+}: {
+  activeTab: TabId;
+  onSelect: (id: TabId) => void;
+  user: User | null;
+  onSignOut: () => void;
+  afterNavigate?: () => void;
+}) {
+  const go = (id: TabId) => {
+    onSelect(id);
+    afterNavigate?.();
+  };
+
+  return (
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      <div className="border-b border-sidebar-border/80 px-5 py-4 lg:px-6 lg:py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm lg:h-12 lg:w-12">
+            <BookOpen className="h-5 w-5" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-base font-semibold tracking-tight lg:text-lg">Better Studio</p>
+            <p className="truncate text-sm text-sidebar-foreground/65">Buchhaltung</p>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 lg:px-4 lg:py-5">
+        <p className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
+          Navigation
+        </p>
+        <ul className="flex flex-col gap-1">
+          {navItems.map((item) => {
+            const active = activeTab === item.id;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => go(item.id)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium transition-colors lg:py-3",
+                    active
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                      : "text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  )}
+                >
+                  <item.icon className="h-5 w-5 shrink-0 opacity-90" strokeWidth={2} />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <div className="border-t border-sidebar-border/80 p-4 lg:p-5">
+        {user?.email ? (
+          <div className="mb-3 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 px-3 py-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
+              Angemeldet
+            </p>
+            <p className="mt-1 truncate text-sm font-medium">{user.email}</p>
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => void onSignOut()}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium text-sidebar-foreground transition-colors hover:bg-destructive/12 hover:text-destructive lg:py-3"
+        >
+          <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} />
+          Abmelden
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function KpiCard({
   label,
   value,
@@ -88,44 +158,60 @@ function KpiCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/50 bg-card/90 p-5 shadow-sm",
-        "bg-gradient-to-br from-card via-card to-muted/20 backdrop-blur-sm",
-        "transition-all duration-300 hover:border-border hover:shadow-md",
+        "relative overflow-hidden rounded-xl border border-border/50 bg-card/90 p-3.5 sm:p-4",
+        "shadow-sm transition-shadow duration-200 hover:border-border/70 hover:shadow",
       )}
     >
-      <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.06]">
-        <Icon className="h-20 w-20" strokeWidth={1.25} />
+      <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.05]">
+        <Icon className="h-12 w-12 sm:h-14 sm:w-14" strokeWidth={1.25} />
       </div>
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={cn("mt-2 font-mono-nums text-2xl font-semibold tracking-tight tabular-nums", valueClass)}>{value}</p>
-      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={cn("mt-1 font-mono-nums text-lg font-semibold tabular-nums sm:text-xl", valueClass)}>{value}</p>
+      {hint ? <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
 
-function DashboardBody() {
+export default function Index() {
   const [activeTab, setActiveTab] = useState<TabId>("einnahmen");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const store = useBookkeepingStore();
   const { signOut, user } = useAuth();
-  const { isMobile, setOpenMobile } = useSidebar();
-
-  const go = (id: TabId) => {
-    setActiveTab(id);
-    if (isMobile) setOpenMobile(false);
-  };
 
   const meta = pageMeta[activeTab];
 
+  const dateLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("de-DE", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(new Date()),
+    [],
+  );
+
+  const dateLong = useMemo(
+    () =>
+      new Intl.DateTimeFormat("de-DE", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date()),
+    [],
+  );
+
   if (store.loading) {
     return (
-      <div className="flex min-h-svh w-full items-center justify-center bg-muted/30">
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-border/60 bg-card/80 px-10 py-12 shadow-lg backdrop-blur-md">
+      <div className="flex h-svh items-center justify-center bg-muted/40 p-4">
+        <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-border/50 bg-card px-8 py-10 shadow-md">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Sparkles className="h-6 w-6 animate-pulse text-primary" />
           </div>
-          <p className="text-sm font-medium text-foreground">Dashboard wird geladen …</p>
-          <div className="h-1 w-32 overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-1/2 animate-pulse rounded-full bg-primary/60" />
+          <p className="text-center text-sm font-medium">Wird geladen …</p>
+          <div className="h-1 w-36 overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-2/5 animate-pulse rounded-full bg-primary/60" />
           </div>
         </div>
       </div>
@@ -133,83 +219,80 @@ function DashboardBody() {
   }
 
   return (
-    <>
-      <Sidebar variant="inset" collapsible="icon">
-        <SidebarHeader className="border-b border-sidebar-border/60 px-3 py-4">
-          <div className="flex items-center gap-3 rounded-lg px-1">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-              <BookOpen className="h-4 w-4" />
+    <div className="flex h-svh min-h-0 w-full overflow-hidden bg-background">
+      {/* Desktop: fixed sidebar, no collapse / rail */}
+      <aside
+        className="hidden h-svh w-[18rem] shrink-0 flex-col border-r border-sidebar-border md:flex lg:w-[20rem]"
+        aria-label="Hauptnavigation"
+      >
+        <SidebarNavPanel
+          activeTab={activeTab}
+          onSelect={setActiveTab}
+          user={user}
+          onSignOut={signOut}
+        />
+      </aside>
+
+      {/* Mobile: sheet menu only */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent
+          side="left"
+          className="flex w-[min(20.5rem,calc(100vw-2rem))] max-w-none flex-col border-sidebar-border bg-sidebar p-0 [&>button]:right-3 [&>button]:top-3 sm:w-[min(22rem,calc(100vw-2rem))]"
+        >
+          <SidebarNavPanel
+            activeTab={activeTab}
+            onSelect={setActiveTab}
+            user={user}
+            onSignOut={signOut}
+            afterNavigate={() => setMobileNavOpen(false)}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <div className="dashboard-canvas flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/90 px-4 py-3.5 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 sm:gap-4 sm:px-5 sm:py-4 md:px-6 md:py-[1.125rem]">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0 md:hidden"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Menü öffnen"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <Separator orientation="vertical" className="hidden h-10 md:block" />
+
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex md:h-11 md:w-11">
+              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} />
             </div>
-            <div className="grid min-w-0 flex-1 leading-none group-data-[collapsible=icon]:hidden">
-              <span className="truncate text-sm font-semibold tracking-tight">Better Studio</span>
-              <span className="truncate text-xs text-sidebar-foreground/65">Buchhaltung</span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
+                Dashboard
+              </p>
+              <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl md:text-2xl">{meta.title}</h1>
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-1 md:text-base">
+                {meta.subtitle}
+              </p>
             </div>
           </div>
-        </SidebarHeader>
 
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      isActive={activeTab === item.id}
-                      onClick={() => go(item.id)}
-                      tooltip={item.label}
-                      className="h-9"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarSeparator />
-
-        <SidebarFooter className="gap-2 p-3">
-          {user?.email ? (
-            <div className="truncate rounded-md px-2 py-1.5 text-xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
-              {user.email}
-            </div>
-          ) : null}
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => void signOut()}
-                tooltip="Abmelden"
-                className="text-sidebar-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Abmelden</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-
-      <SidebarInset className="bg-muted/25">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 md:px-6">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-6" />
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-sm font-semibold tracking-tight text-foreground md:text-base">{meta.title}</h1>
-            <p className="hidden truncate text-xs text-muted-foreground sm:block">{meta.subtitle}</p>
+          <div className="hidden items-center gap-2.5 rounded-xl border border-border/50 bg-card/90 px-3 py-2 text-sm text-muted-foreground shadow-sm sm:flex md:gap-3 md:px-4 md:py-2.5 md:text-base">
+            <CalendarDays className="h-5 w-5 shrink-0 text-primary/80 md:h-6 md:w-6" />
+            <span className="hidden font-medium text-foreground/90 lg:inline">{dateLong}</span>
+            <span className="font-medium text-foreground/90 lg:hidden">{dateLabel}</span>
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto">
-          <div className="mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+        {/* Single scroll region: only scrolls when content exceeds viewport */}
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
+          <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:space-y-5 sm:px-4 sm:py-5 md:px-5 md:py-6 lg:px-6">
             <motion.div
               initial={false}
               animate={{ opacity: 1 }}
-              className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3"
             >
               <KpiCard
                 label="Gewinn"
@@ -223,25 +306,25 @@ function DashboardBody() {
                 value={`−${store.steuerRuecklage.toFixed(2)} €`}
                 valueClass="text-muted-foreground"
                 icon={Landmark}
-                hint="Co-Pilot-Schätzung auf den Gewinn"
+                hint="Co-Pilot-Schätzung"
               />
               <KpiCard
                 label="Verfügbar (Co-Pilot)"
                 value={`${store.verfuegbarPrivat >= 0 ? "+" : ""}${store.verfuegbarPrivat.toFixed(2)} €`}
                 valueClass={store.verfuegbarPrivat >= 0 ? "text-success" : "text-destructive"}
                 icon={Wallet}
-                hint="Nach ESt-Rücklage — weitere Fixkosten extra planen"
+                hint="Nach ESt-Rücklage"
               />
             </motion.div>
 
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
               className={cn(
-                "rounded-2xl border border-border/50 bg-card/70 p-5 shadow-sm backdrop-blur-sm",
-                "md:p-6 lg:p-8",
+                "rounded-xl border border-border/50 bg-card/90 p-3.5 shadow-sm sm:p-4 md:p-5",
+                "dashboard-content-shell",
               )}
             >
               {activeTab === "einnahmen" && (
@@ -281,16 +364,8 @@ function DashboardBody() {
               {activeTab === "monatsuebersicht" && <MonatsuebersichtTab monthlyData={store.getMonthlyData()} />}
             </motion.div>
           </div>
-        </div>
-      </SidebarInset>
-    </>
-  );
-}
-
-export default function Index() {
-  return (
-    <SidebarProvider defaultOpen>
-      <DashboardBody />
-    </SidebarProvider>
+        </main>
+      </div>
+    </div>
   );
 }

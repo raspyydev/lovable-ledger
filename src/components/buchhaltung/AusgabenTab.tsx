@@ -74,19 +74,19 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium tracking-tight text-foreground">Ausgaben</h2>
-          <p className="text-sm text-muted-foreground">
+    <div className="space-y-5 md:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0 space-y-1.5">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Ausgaben</h2>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
             Hier buchst du Betriebsausgaben. Kleinunternehmer: kein Vorsteuerabzug — fürs Studio zählt das Brutto.
           </p>
         </div>
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm()); setShowForm(!showForm); }}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity ease-studio duration-200"
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity ease-studio duration-200 hover:opacity-90"
         >
-          <Plus className="w-4 h-4" /> Ausgabe erfassen
+          <Plus className="h-4 w-4" /> Ausgabe erfassen
         </button>
       </div>
 
@@ -96,7 +96,7 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
             onSubmit={handleSubmit}
-            className="shadow-card rounded-lg bg-card p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-hidden"
+            className="shadow-card grid grid-cols-2 gap-3 overflow-hidden rounded-xl border border-border/40 bg-card p-4 md:grid-cols-3 md:gap-4 md:p-5 lg:grid-cols-5"
           >
             <div className="space-y-1">
               <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Datum</label>
@@ -153,8 +153,8 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
               </select>
             </div>
             <div className="col-span-full flex justify-end gap-2 pt-2">
-              <button type="button" onClick={cancelForm} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">Abbrechen</button>
-              <button type="submit" className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
+              <button type="button" onClick={cancelForm} className="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Abbrechen</button>
+              <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90">
                 {editingId ? 'Änderungen speichern' : 'Speichern'}
               </button>
             </div>
@@ -162,16 +162,16 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
         )}
       </AnimatePresence>
 
-      <div className="shadow-card rounded-lg bg-card overflow-x-auto">
-        <div className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] min-w-[900px] px-4 py-2 border-b border-border/50">
+      <div className="shadow-card overflow-x-auto rounded-xl border border-border/40 bg-card">
+        <div className="grid min-w-[900px] grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] border-b border-border/50 px-3 py-2.5 sm:px-4">
           {['Datum', 'Beleg', 'Beschreibung', 'Kategorie', 'Netto €', 'USt%', 'USt €', 'Brutto €', 'Zahlung', ''].map(h => (
-            <span key={h} className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{h}</span>
+            <span key={h} className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{h}</span>
           ))}
         </div>
         <div className="divide-y divide-border/30 min-w-[900px]">
           <AnimatePresence>
             {ausgaben.length === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+              <div className="px-4 py-10 text-center text-sm text-muted-foreground sm:py-12">
                 Noch keine Ausgaben. „Ausgabe erfassen“ — der Co-Pilot rechnet Gewinn und Rücklagen automatisch mit.
               </div>
             ) : (
@@ -179,7 +179,7 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
                 <motion.div key={a.id}
                   initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] px-4 py-3 items-center hover:bg-muted/50 transition-colors duration-200 ease-studio"
+                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] items-center px-3 py-3 transition-colors duration-200 ease-studio hover:bg-muted/50 sm:px-4"
                 >
                   <span className="text-sm font-mono-nums">{a.datum}</span>
                   <span className="text-sm text-muted-foreground">{a.belegnr}</span>
@@ -204,7 +204,7 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
           </AnimatePresence>
         </div>
         {ausgaben.length > 0 && (
-          <div className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] min-w-[900px] px-4 py-3 border-t border-border bg-muted/30">
+          <div className="grid min-w-[900px] grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] border-t border-border bg-muted/30 px-3 py-3 sm:px-4">
             <span /><span /><span />
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Summe</span>
             <span className="text-sm font-mono-nums font-semibold">{totalNetto.toFixed(2)}</span>
