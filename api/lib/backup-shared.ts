@@ -7,6 +7,13 @@ export function requireEnv(name: string): string {
   return v;
 }
 
+/** SMTP "From:" header. Optional if it matches the authenticated user — defaults to SMTP_USER. */
+export function getMailFrom(): string {
+  const explicit = process.env.MAIL_FROM?.trim();
+  if (explicit?.length) return explicit;
+  return requireEnv("SMTP_USER");
+}
+
 export function createSmtpTransporter() {
   const smtpHost = requireEnv("SMTP_HOST");
   const smtpPort = Number(requireEnv("SMTP_PORT"));

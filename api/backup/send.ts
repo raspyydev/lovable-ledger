@@ -1,13 +1,14 @@
 /**
  * Manual backup: POST with Authorization: Bearer <Supabase access_token>.
  * Sends the same JSON snapshot as cron, only for the signed-in user.
- * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SMTP_*, MAIL_FROM (same as cron).
+ * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SMTP_*; optional MAIL_FROM (defaults to SMTP_USER).
  */
 
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   requireEnv,
+  getMailFrom,
   createSmtpTransporter,
   loadBackupPayloadForUser,
   sendBackupEmail,
@@ -28,8 +29,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const mailFrom = requireEnv("MAIL_FROM");
-
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -43,6 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const payload = await loadBackupPayloadForUser(supabase, user.id);
     const transporter = createSmtpTransporter();
     const dateStr = new Date().toISOString().slice(0, 10);
+    const mailFrom = getMailFrom();
 
     await sendBackupEmail({
       transporter,

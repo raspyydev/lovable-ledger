@@ -5,7 +5,7 @@
  *
  * Env:
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- *   SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS, MAIL_FROM
+ *   SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS; optional MAIL_FROM (defaults to SMTP_USER)
  *   Optional: SMTP_SECURE=true (e.g. port 465)
  */
 
@@ -13,6 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   requireEnv,
+  getMailFrom,
   createSmtpTransporter,
   loadBackupPayloadForUser,
   sendBackupEmail,
@@ -38,13 +39,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const mailFrom = requireEnv("MAIL_FROM");
 
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
     const transporter = createSmtpTransporter();
+    const mailFrom = getMailFrom();
 
     const allUsers: { id: string; email?: string }[] = [];
     let page = 1;
