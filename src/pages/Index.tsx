@@ -6,18 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBookkeepingStore } from '@/lib/store';
 import { TabId } from '@/lib/types';
-import EinnahmenTab from '@/components/ledger/EinnahmenTab';
-import AusgabenTab from '@/components/ledger/AusgabenTab';
-import KategorienTab from '@/components/ledger/KategorienTab';
-import ZusammenfassungTab from '@/components/ledger/ZusammenfassungTab';
-import MonatsuebersichtTab from '@/components/ledger/MonatsuebersichtTab';
+import EinnahmenTab from '@/components/buchhaltung/EinnahmenTab';
+import AusgabenTab from '@/components/buchhaltung/AusgabenTab';
+import KategorienTab from '@/components/buchhaltung/KategorienTab';
+import ZusammenfassungTab from '@/components/buchhaltung/ZusammenfassungTab';
+import MonatsuebersichtTab from '@/components/buchhaltung/MonatsuebersichtTab';
 
 const tabs: { id: TabId; label: string; icon: typeof BookOpen }[] = [
-  { id: 'einnahmen', label: 'Einnahmen', icon: BookOpen },
+  { id: 'einnahmen', label: 'Einnahmen · Umsatz', icon: BookOpen },
   { id: 'ausgaben', label: 'Ausgaben', icon: ArrowDownUp },
   { id: 'kategorien', label: 'Kategorien', icon: Tag },
-  { id: 'zusammenfassung', label: 'Zusammenfassung', icon: PieChart },
-  { id: 'monatsuebersicht', label: 'Monatsübersicht', icon: BarChart3 },
+  { id: 'zusammenfassung', label: 'Co-Pilot · Überblick', icon: PieChart },
+  { id: 'monatsuebersicht', label: 'Monats-Autopilot', icon: BarChart3 },
 ];
 
 export default function Index() {
@@ -43,8 +43,12 @@ export default function Index() {
               <BookOpen className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-medium tracking-tight text-foreground" style={{ letterSpacing: '-0.02em' }}>Ledger</h1>
-              <p className="text-[11px] text-muted-foreground">Finanzen auf Autopilot</p>
+              <h1 className="text-base font-medium tracking-tight text-foreground" style={{ letterSpacing: '-0.02em' }}>
+                Better Studio Buchhaltung
+              </h1>
+              <p className="text-[11px] text-muted-foreground">
+                Autopilot für Summen · Co-Pilot fürs Studio
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-4 sm:gap-6 text-right">
@@ -61,7 +65,7 @@ export default function Index() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Verfügbar</p>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Verfügbar (Co-Pilot)</p>
               <p className={`text-xl font-mono-nums font-medium tracking-tight ${store.verfuegbarPrivat >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {store.verfuegbarPrivat >= 0 ? '+' : ''}{store.verfuegbarPrivat.toFixed(2)} €
               </p>
@@ -74,12 +78,12 @@ export default function Index() {
                   size="icon"
                   className="shrink-0 text-muted-foreground hover:text-foreground"
                   onClick={() => void signOut()}
-                  aria-label="Abmelden"
+                  aria-label="Aus Better Studio abmelden"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Abmelden</TooltipContent>
+              <TooltipContent side="bottom">Aus Better Studio abmelden</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -93,7 +97,7 @@ export default function Index() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors duration-200 ease-ledger whitespace-nowrap
+                className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors duration-200 ease-studio whitespace-nowrap
                   ${activeTab === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <tab.icon className="w-4 h-4" />

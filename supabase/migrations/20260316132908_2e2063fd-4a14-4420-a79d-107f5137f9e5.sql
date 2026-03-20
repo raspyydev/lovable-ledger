@@ -1,4 +1,4 @@
--- Ledger / Kleinunternehmer Buchhaltung (Einnahmen, Ausgaben, Kategorien)
+-- Better Studio Buchhaltung / Kleinunternehmer (Einnahmen, Ausgaben, Kategorien)
 -- All tables and policies required for the app; run once on fresh DB.
 
 -- Kategorien (Einnahme- und Ausgabe-Kategorien)
@@ -13,7 +13,7 @@ CREATE TABLE public.kategorien (
 CREATE INDEX idx_kategorien_typ ON public.kategorien (typ);
 CREATE INDEX idx_kategorien_created_at ON public.kategorien (created_at);
 
-COMMENT ON TABLE public.kategorien IS 'Kategorien für Einnahmen und Ausgaben (Kleinunternehmer Ledger)';
+COMMENT ON TABLE public.kategorien IS 'Kategorien für Einnahmen und Ausgaben (Kleinunternehmer / Better Studio)';
 
 -- Einnahmen (Umsatz = Brutto, Kleinunternehmer §19 UStG)
 CREATE TABLE public.einnahmen (

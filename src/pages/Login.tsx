@@ -32,9 +32,21 @@ const credentialsSchema = z.object({
 type CredentialsForm = z.infer<typeof credentialsSchema>;
 
 const features = [
-  { icon: TrendingUp, title: "Einnahmen & Ausgaben", desc: "Alles an einem Ort, klar strukturiert." },
-  { icon: PieChart, title: "Steuer-Rücklagen", desc: "Schätzungen auf einen Blick — ohne Tabellenchaos." },
-  { icon: Sparkles, title: "Schnell & ruhig", desc: "Weniger Klicks, mehr Überblick für dein Studio." },
+  {
+    icon: TrendingUp,
+    title: "Autopilot für laufende Summen",
+    desc: "Better Studio zieht Einnahmen und Ausgaben zusammen — oben siehst du sofort, wo du stehst.",
+  },
+  {
+    icon: PieChart,
+    title: "Co-Pilot für Rücklagen & Überblick",
+    desc: "Steuer-Rücklagen und Verfügbarkeit als klare Leitplanken, nicht als Excel-Rätsel.",
+  },
+  {
+    icon: Sparkles,
+    title: "Gebaut fürs kreative Studio",
+    desc: "Better Studio Buchhaltung: weniger Admin-Kopf, mehr Fokus auf dein Kerngeschäft.",
+  },
 ] as const;
 
 function LoginBackdrop() {
@@ -192,14 +204,14 @@ export default function Login() {
                   <BookOpen className="h-7 w-7" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-semibold tracking-tight">Konfiguration fehlt</CardTitle>
+                  <CardTitle className="text-2xl font-semibold tracking-tight">Better Studio kann nicht starten</CardTitle>
                   <CardDescription className="text-pretty pt-2 text-sm leading-relaxed">
                     Lege{" "}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">VITE_SUPABASE_URL</code> und{" "}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                       VITE_SUPABASE_PUBLISHABLE_KEY
                     </code>{" "}
-                    in der Umgebung an und starte den Dev-Server neu.
+                    an — sonst bleiben Autopilot und Co-Pilot offline.
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -228,9 +240,9 @@ export default function Login() {
               </div>
               <div>
                 <p className="text-lg font-semibold tracking-tight" style={{ letterSpacing: "-0.03em" }}>
-                  Ledger
+                  Better Studio
                 </p>
-                <p className="text-xs text-muted-foreground">Studio-Buchhaltung, die mitdenkt</p>
+                <p className="text-xs text-muted-foreground">Buchhaltung fürs kreative Studio</p>
               </div>
             </div>
 
@@ -238,15 +250,15 @@ export default function Login() {
               className="mt-14 max-w-md text-4xl font-semibold leading-[1.1] tracking-tight text-foreground xl:text-[2.75rem]"
               style={{ letterSpacing: "-0.04em" }}
             >
-              Deine Zahlen.
+              Autopilot für Zahlen.
               <br />
               <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent dark:from-white dark:via-white/90 dark:to-white/50">
-                Dein ruhiger Kopf.
+                Co-Pilot fürs Studio.
               </span>
             </h2>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Melde dich an und spring direkt in Einnahmen, Ausgaben und Übersichten — mit einem Look, der sich gut
-              anfühlt, nicht nach Excel-Flashback.
+              Better Studio Buchhaltung bündelt dein Cockpit: Einnahmen, Ausgaben, Monats-Autopilot und
+              Co-Pilot-Überblick — ohne Spreadsheet-Trauma.
             </p>
           </div>
 
@@ -272,7 +284,7 @@ export default function Login() {
 
           <div className="mt-10 flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>Supabase Auth · verschlüsselte Verbindung · Session sicher im Browser</span>
+            <span>Better Studio · Supabase Auth · verschlüsselte Verbindung · Session im Browser</span>
           </div>
         </motion.aside>
 
@@ -288,9 +300,9 @@ export default function Login() {
             </div>
             <div>
               <p className="text-base font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                Ledger
+                Better Studio
               </p>
-              <p className="text-xs text-muted-foreground">Willkommen zurück</p>
+              <p className="text-xs text-muted-foreground">Willkommen zurück im Cockpit</p>
             </div>
           </motion.div>
 
@@ -304,9 +316,9 @@ export default function Login() {
               <Card className="relative overflow-hidden border-border/50 bg-card/80 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
                 <CardHeader className="space-y-1 border-b border-border/40 bg-muted/20 px-6 pb-5 pt-6">
-                  <CardTitle className="text-xl font-semibold tracking-tight">Anmelden</CardTitle>
+                  <CardTitle className="text-xl font-semibold tracking-tight">Anmelden bei Better Studio</CardTitle>
                   <CardDescription>
-                    Gib deine Zugangsdaten ein — wir holen dich sofort ins Dashboard.
+                    Zugang zu Better Studio Buchhaltung — Autopilot und Co-Pilot sind für dich bereit.
                   </CardDescription>
                 </CardHeader>
 
@@ -367,7 +379,7 @@ export default function Login() {
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <>
-                            Weiter zum Dashboard
+                            Ins Better-Studio-Cockpit
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                           </>
                         )}
@@ -377,7 +389,7 @@ export default function Login() {
                   </form>
 
                   <p className="pt-1 text-center text-[11px] leading-relaxed text-muted-foreground">
-                    Auth läuft über Supabase — neue Konten legst du im Supabase-Dashboard an.
+                    Better Studio nutzt Supabase Auth. Neue Team-Zugänge richtest du dort ein.
                   </p>
                 </CardContent>
               </Card>

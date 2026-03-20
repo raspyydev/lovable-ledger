@@ -113,11 +113,11 @@
   .shadow-command {
     box-shadow: var(--shadow-command);
   }
-  .ease-ledger {
+  .ease-studio {
     transition-timing-function: cubic-bezier(0.2, 0.0, 0, 1.0);
   }
 
-  /* Login hero: slow drifting gradient orbs (respects reduced motion via JS; CSS is subtle) */
+  /* Login: slow drifting gradient orbs (respects reduced motion via JS; CSS is subtle) */
   @keyframes login-drift {
     0%,
     100% {

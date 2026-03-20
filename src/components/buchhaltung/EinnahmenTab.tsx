@@ -64,14 +64,16 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-medium tracking-tight text-foreground">Einnahmen</h2>
-          <p className="text-sm text-muted-foreground">Rechnungsbetrag (Kleinunternehmer: = dein Umsatz, keine USt)</p>
+          <p className="text-sm text-muted-foreground">
+            Hier erfasst du deinen Umsatz. Kleinunternehmer (§19 UStG): Rechnungsbetrag = Umsatz, ohne ausgewiesene USt.
+          </p>
         </div>
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm()); setShowForm(!showForm); }}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity ease-ledger duration-200"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity ease-studio duration-200"
         >
           <Plus className="w-4 h-4" />
-          Neue Einnahme
+          Einnahme erfassen
         </button>
       </div>
 
@@ -144,7 +146,7 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
           <AnimatePresence>
             {einnahmen.length === 0 ? (
               <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                Noch keine Einnahmen. Klicke "Neue Einnahme" oder nutze die Kommandozeile (Cmd+K).
+                Noch keine Einnahmen. Tippe auf „Einnahme erfassen“ — der Autopilot oben zählt mit, sobald Einträge da sind.
               </div>
             ) : (
               einnahmen.map(e => (
@@ -154,7 +156,7 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="grid grid-cols-[100px_80px_1fr_120px_100px_100px_80px] px-4 py-3 items-center hover:bg-muted/50 transition-colors duration-200 ease-ledger"
+                  className="grid grid-cols-[100px_80px_1fr_120px_100px_100px_80px] px-4 py-3 items-center hover:bg-muted/50 transition-colors duration-200 ease-studio"
                 >
                   <span className="text-sm font-mono-nums">{e.datum}</span>
                   <span className="text-sm text-muted-foreground">{e.belegnr}</span>

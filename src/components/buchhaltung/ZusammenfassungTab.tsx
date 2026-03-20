@@ -28,8 +28,11 @@ export default function ZusammenfassungTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium tracking-tight text-foreground">Zusammenfassung</h2>
-        <p className="text-sm text-muted-foreground">Kleinunternehmer (§19 UStG): Umsatzsteuerfrei. Gewinn = Einnahmen − Ausgaben (Brutto). Einkommensteuer auf den Gewinn.</p>
+        <h2 className="text-lg font-medium tracking-tight text-foreground">Co-Pilot · Zusammenfassung</h2>
+        <p className="text-sm text-muted-foreground">
+          Better Studio Buchhaltung (Kleinunternehmer §19 UStG): umsatzsteuerfrei. Gewinn = Einnahmen − Ausgaben (Brutto).
+          Die ESt-Rücklage ist eine Co-Pilot-Schätzung auf den Gewinn — keine Steuerberatung.
+        </p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -66,8 +69,11 @@ export default function ZusammenfassungTab({
       </div>
 
       <div className="rounded-lg bg-muted/50 border border-border/50 p-4 text-sm text-muted-foreground">
-        <p className="font-medium text-foreground mb-1">Hinweis Krankenversicherung</p>
-        <p>„Verfügbar“ ist nach Abzug der Einkommensteuer-Rücklage. Plane zusätzlich mind. ca. 220 €/Monat für die Krankenversicherung (GKV 2026) ein.</p>
+        <p className="font-medium text-foreground mb-1">Co-Pilot · Krankenversicherung</p>
+        <p>
+          „Verfügbar (Co-Pilot)“ ist nach Abzug der ESt-Rücklage. Plane realistisch zusätzlich mind. ca. 220 €/Monat
+          für die GKV (Stand 2026) ein — Better Studio ersetzt keine Beratung.
+        </p>
       </div>
     </div>
   );

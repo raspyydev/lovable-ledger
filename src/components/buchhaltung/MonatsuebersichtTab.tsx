@@ -10,8 +10,10 @@ export default function MonatsuebersichtTab({ monthlyData }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium tracking-tight text-foreground">Monatsübersicht</h2>
-        <p className="text-sm text-muted-foreground">Einnahmen und Ausgaben nach Monat</p>
+        <h2 className="text-lg font-medium tracking-tight text-foreground">Monats-Autopilot</h2>
+        <p className="text-sm text-muted-foreground">
+          Einnahmen und Ausgaben pro Monat — dein Jahresverlauf im Better-Studio-Cockpit.
+        </p>
       </div>
 
       {/* Bar chart */}
@@ -21,11 +23,11 @@ export default function MonatsuebersichtTab({ monthlyData }: Props) {
             <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
               <div className="flex gap-0.5 items-end w-full justify-center" style={{ height: '80%' }}>
                 <div
-                  className="w-2.5 bg-success/80 rounded-t-sm transition-all duration-500 ease-ledger"
+                  className="w-2.5 bg-success/80 rounded-t-sm transition-all duration-500 ease-studio"
                   style={{ height: `${(m.einnahmen / maxVal) * 100}%`, minHeight: m.einnahmen > 0 ? 4 : 0 }}
                 />
                 <div
-                  className="w-2.5 bg-destructive/60 rounded-t-sm transition-all duration-500 ease-ledger"
+                  className="w-2.5 bg-destructive/60 rounded-t-sm transition-all duration-500 ease-studio"
                   style={{ height: `${(m.ausgaben / maxVal) * 100}%`, minHeight: m.ausgaben > 0 ? 4 : 0 }}
                 />
               </div>
@@ -36,11 +38,11 @@ export default function MonatsuebersichtTab({ monthlyData }: Props) {
         <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-sm bg-success/80" />
-            <span className="text-xs text-muted-foreground">Einnahmen</span>
+            <span className="text-xs text-muted-foreground">Einnahmen (Umsatz)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-sm bg-destructive/60" />
-            <span className="text-xs text-muted-foreground">Ausgaben</span>
+            <span className="text-xs text-muted-foreground">Ausgaben (Brutto)</span>
           </div>
         </div>
       </div>

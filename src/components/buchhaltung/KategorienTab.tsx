@@ -27,14 +27,16 @@ export default function KategorienTab({ kategorien, onAdd, onDelete }: Props) {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-medium tracking-tight text-foreground">Kategorien</h2>
-        <p className="text-sm text-muted-foreground">Verwalte deine Einnahmen- und Ausgaben-Kategorien</p>
+        <p className="text-sm text-muted-foreground">
+          Better Studio sortiert über Kategorien — dein Co-Pilot bleibt lesbar, egal wie viele Streams du fährst.
+        </p>
       </div>
 
       <form onSubmit={handleAdd} className="shadow-card rounded-lg bg-card p-4 flex gap-3 items-end">
         <div className="flex-1 space-y-1">
           <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Name</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Neue Kategorie..." required />
+            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring" placeholder="z. B. Retusche, Hosting …" required />
         </div>
         <div className="space-y-1">
           <label className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Typ</label>
@@ -50,8 +52,8 @@ export default function KategorienTab({ kategorien, onAdd, onDelete }: Props) {
       </form>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {[{ title: 'Einnahmen-Kategorien', items: einnahmeKats, color: 'text-success' },
-          { title: 'Ausgaben-Kategorien', items: ausgabeKats, color: 'text-destructive' }].map(group => (
+        {[{ title: 'Einnahmen · Umsatz-Topf', items: einnahmeKats, color: 'text-success' },
+          { title: 'Ausgaben · Studio-Kosten', items: ausgabeKats, color: 'text-destructive' }].map(group => (
           <div key={group.title} className="shadow-card rounded-lg bg-card overflow-hidden">
             <div className="px-4 py-3 border-b border-border/50">
               <h3 className={`text-sm font-medium ${group.color}`}>{group.title}</h3>

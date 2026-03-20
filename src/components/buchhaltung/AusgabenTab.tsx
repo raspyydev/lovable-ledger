@@ -78,13 +78,15 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-medium tracking-tight text-foreground">Ausgaben</h2>
-          <p className="text-sm text-muted-foreground">Brutto = Betriebsausgabe (Kleinunternehmer: kein Vorsteuerabzug)</p>
+          <p className="text-sm text-muted-foreground">
+            Hier buchst du Betriebsausgaben. Kleinunternehmer: kein Vorsteuerabzug — fürs Studio zählt das Brutto.
+          </p>
         </div>
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm()); setShowForm(!showForm); }}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity ease-ledger duration-200"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity ease-studio duration-200"
         >
-          <Plus className="w-4 h-4" /> Neue Ausgabe
+          <Plus className="w-4 h-4" /> Ausgabe erfassen
         </button>
       </div>
 
@@ -170,14 +172,14 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
           <AnimatePresence>
             {ausgaben.length === 0 ? (
               <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-                Noch keine Ausgaben erfasst.
+                Noch keine Ausgaben. „Ausgabe erfassen“ — der Co-Pilot rechnet Gewinn und Rücklagen automatisch mit.
               </div>
             ) : (
               ausgaben.map(a => (
                 <motion.div key={a.id}
                   initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] px-4 py-3 items-center hover:bg-muted/50 transition-colors duration-200 ease-ledger"
+                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] px-4 py-3 items-center hover:bg-muted/50 transition-colors duration-200 ease-studio"
                 >
                   <span className="text-sm font-mono-nums">{a.datum}</span>
                   <span className="text-sm text-muted-foreground">{a.belegnr}</span>
