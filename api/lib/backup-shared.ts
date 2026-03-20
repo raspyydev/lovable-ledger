@@ -15,15 +15,37 @@ export function getMailFrom(): string {
 }
 
 export function createSmtpTransporter() {
-  const smtpHost = requireEnv("SMTP_HOST");
-  const smtpPort = Number(requireEnv("SMTP_PORT"));
-  const smtpUser = requireEnv("SMTP_USER");
-  const smtpPass = requireEnv("SMTP_PASS");
+  const host = process.env.SMTP_HOST?.trim();
+  const portRaw = process.env.SMTP_PORT?.trim();
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.trim();
+
+  const missing: string[] = [];
+  if (!host) missing.push("SMTP_HOST");
+  if (!portRaw) missing.push("SMTP_PORT");
+  if (!user) missing.push("SMTP_USER");
+  if (!pass) missing.push("SMTP_PASS");
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing: ${missing.join(", ")}. ` +
+        "SMTP is the outgoing mail server the app uses to send backup emails. " +
+        "SMTP_HOST is the server hostname from your mail provider " +
+        "(e.g. smtp.gmail.com, smtp.office365.com, smtp.sendgrid.net). " +
+        "Set SMTP_HOST, SMTP_PORT (often 587), SMTP_USER, and SMTP_PASS in Vercel → Environment Variables.",
+    );
+  }
+
+  const smtpPort = Number(portRaw);
+  if (Number.isNaN(smtpPort)) {
+    throw new Error("SMTP_PORT must be a number (e.g. 587).");
+  }
+
   return nodemailer.createTransport({
-    host: smtpHost,
+    host,
     port: smtpPort,
     secure: process.env.SMTP_SECURE === "true" || smtpPort === 465,
-    auth: { user: smtpUser, pass: smtpPass },
+    auth: { user, pass },
   });
 }
 
