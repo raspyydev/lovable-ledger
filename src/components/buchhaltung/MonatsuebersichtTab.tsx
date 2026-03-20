@@ -13,7 +13,7 @@ export default function MonatsuebersichtTab({ monthlyData }: Props) {
         <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Monats-Autopilot</h2>
         <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Einnahmen und Ausgaben pro Monat — dein Jahresverlauf im Better-Studio-Cockpit.
-        </p>
+        </p> 
       </div>
 
       {/* Bar chart */}
