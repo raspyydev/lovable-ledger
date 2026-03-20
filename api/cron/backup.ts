@@ -11,13 +11,12 @@
 
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import nodemailer from "nodemailer";
-
-function requireEnv(name: string): string {
-  const v = process.env[name]; 
-  if (!v?.length) throw new Error(`Missing env: ${name}`);
-  return v;
-}
+import {
+  requireEnv,
+  createSmtpTransporter,
+  loadBackupPayloadForUser,
+  sendBackupEmail,
+} from "../lib/backup-shared";
 
 function isAuthorized(req: VercelRequest): boolean {
   const secret = process.env.CRON_SECRET;
@@ -39,22 +38,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const smtpHost = requireEnv("SMTP_HOST");
-    const smtpPort = Number(requireEnv("SMTP_PORT"));
-    const smtpUser = requireEnv("SMTP_USER");
-    const smtpPass = requireEnv("SMTP_PASS");
     const mailFrom = requireEnv("MAIL_FROM");
 
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: process.env.SMTP_SECURE === "true" || smtpPort === 465,
-      auth: { user: smtpUser, pass: smtpPass },
-    });
+    const transporter = createSmtpTransporter();
 
     const allUsers: { id: string; email?: string }[] = [];
     let page = 1;
@@ -78,38 +68,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         continue;
       }
 
-      const [eRes, aRes, kRes] = await Promise.all([
-        supabase.from("einnahmen").select("*").eq("user_id", u.id).order("datum", { ascending: false }),
-        supabase.from("ausgaben").select("*").eq("user_id", u.id).order("datum", { ascending: false }),
-        supabase.from("kategorien").select("*").eq("user_id", u.id).order("created_at", { ascending: true }),
-      ]);
+      const payload = await loadBackupPayloadForUser(supabase, u.id);
 
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        app: "Better Studio Buchhaltung",
-        userId: u.id,
-        einnahmen: eRes.data ?? [],
-        ausgaben: aRes.data ?? [],
-        kategorien: kRes.data ?? [],
-      };
-
-      const json = JSON.stringify(payload, null, 2);
-      const filename = `better-studio-buchhaltung-backup-${dateStr}.json`;
-
-      await transporter.sendMail({
-        from: mailFrom,
+      await sendBackupEmail({
+        transporter,
+        mailFrom,
         to: u.email,
+        payload,
         subject: `[Better Studio] Tages-Backup ${dateStr}`,
         text:
           "Anbei findest du das automatische Tages-Backup deiner Buchhaltungsdaten (JSON-Anhang).\n\n" +
           "Better Studio Buchhaltung — bitte sicher aufbewahren.",
-        attachments: [
-          {
-            filename,
-            content: json,
-            contentType: "application/json; charset=utf-8",
-          },
-        ],
       });
 
       sent += 1;

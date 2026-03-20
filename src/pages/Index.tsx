@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowDownUp,
@@ -8,6 +8,7 @@ import {
   Landmark,
   LayoutDashboard,
   LogOut,
+  Mail,
   Menu,
   PieChart,
   Sparkles,
@@ -15,6 +16,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -66,12 +68,16 @@ function SidebarNavPanel({
   user,
   onSignOut,
   afterNavigate,
+  backupSending,
+  onManualBackup,
 }: {
   activeTab: TabId;
   onSelect: (id: TabId) => void;
   user: User | null;
   onSignOut: () => void;
   afterNavigate?: () => void;
+  backupSending: boolean;
+  onManualBackup: () => void;
 }) {
   const go = (id: TabId) => {
     onSelect(id);
@@ -131,6 +137,15 @@ function SidebarNavPanel({
         ) : null}
         <button
           type="button"
+          disabled={backupSending || !user?.email}
+          onClick={() => onManualBackup()}
+          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 lg:py-3"
+        >
+          <Mail className="h-5 w-5 shrink-0" strokeWidth={2} />
+          {backupSending ? "Backup wird gesendet …" : "Backup per E-Mail"}
+        </button>
+        <button
+          type="button"
           onClick={() => void onSignOut()}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium text-sidebar-foreground transition-colors hover:bg-destructive/12 hover:text-destructive lg:py-3"
         >
@@ -175,8 +190,37 @@ function KpiCard({
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabId>("einnahmen");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [backupSending, setBackupSending] = useState(false);
   const store = useBookkeepingStore();
-  const { signOut, user } = useAuth();
+  const { signOut, user, session } = useAuth();
+
+  const requestManualBackup = useCallback(async () => {
+    const token = session?.access_token;
+    if (!token) {
+      toast.error("Nicht angemeldet.");
+      return;
+    }
+    setBackupSending(true);
+    try {
+      const res = await fetch("/api/backup/send", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        throw new Error(data.error || `Anfrage fehlgeschlagen (${res.status})`);
+      }
+      toast.success("Backup wurde an deine E-Mail gesendet.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
+      toast.error(msg);
+    } finally {
+      setBackupSending(false);
+    }
+  }, [session?.access_token]);
 
   const meta = pageMeta[activeTab];
 
@@ -230,6 +274,8 @@ export default function Index() {
           onSelect={setActiveTab}
           user={user}
           onSignOut={signOut}
+          backupSending={backupSending}
+          onManualBackup={() => void requestManualBackup()}
         />
       </aside>
 
@@ -245,6 +291,8 @@ export default function Index() {
             user={user}
             onSignOut={signOut}
             afterNavigate={() => setMobileNavOpen(false)}
+            backupSending={backupSending}
+            onManualBackup={() => void requestManualBackup()}
           />
         </SheetContent>
       </Sheet>
