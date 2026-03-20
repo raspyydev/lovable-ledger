@@ -5,8 +5,9 @@
  *
  * Env:
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- *   SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASS; optional MAIL_FROM (defaults to SMTP_USER)
- *   Optional: SMTP_SECURE=true (e.g. port 465)
+ *   MAIL_USER + MAIL_PASS (Gmail App Password), same as BWA — or SMTP_USER + SMTP_PASS
+ *   Optional: SMTP_HOST + SMTP_PORT for non-Gmail SMTP; else nodemailer uses service "gmail"
+ *   Optional: MAIL_FROM; optional SMTP_SECURE=true for port 465
  */
 
 import { createClient } from "@supabase/supabase-js";

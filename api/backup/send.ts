@@ -1,7 +1,7 @@
 /**
  * Manual backup: POST with Authorization: Bearer <Supabase access_token>.
  * Sends the same JSON snapshot as cron, only for the signed-in user.
- * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SMTP_*; optional MAIL_FROM (defaults to SMTP_USER).
+ * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, MAIL_USER + MAIL_PASS (or SMTP_*), optional MAIL_FROM / SMTP_HOST.
  */
 
 import { createClient } from "@supabase/supabase-js";

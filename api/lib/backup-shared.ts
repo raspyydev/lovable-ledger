@@ -7,46 +7,74 @@ export function requireEnv(name: string): string {
   return v;
 }
 
-/** SMTP "From:" header. Optional if it matches the authenticated user — defaults to SMTP_USER. */
-export function getMailFrom(): string {
-  const explicit = process.env.MAIL_FROM?.trim();
-  if (explicit?.length) return explicit;
-  return requireEnv("SMTP_USER");
-}
+/** Same env names as BetterService BWA: MAIL_USER / MAIL_PASS, fallback SMTP_USER / SMTP_PASS. */
+export function getMailCredentials(): { user: string; pass: string } {
+  const user =
+    process.env.MAIL_USER?.trim() ||
+    process.env.SMTP_USER?.trim();
+  const pass =
+    process.env.MAIL_PASS?.trim() ||
+    process.env.SMTP_PASS?.trim() ||
+    process.env.SMTP_PASSWORD?.trim();
 
-export function createSmtpTransporter() {
-  const host = process.env.SMTP_HOST?.trim();
-  const portRaw = process.env.SMTP_PORT?.trim();
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASS?.trim();
-
-  const missing: string[] = [];
-  if (!host) missing.push("SMTP_HOST");
-  if (!portRaw) missing.push("SMTP_PORT");
-  if (!user) missing.push("SMTP_USER");
-  if (!pass) missing.push("SMTP_PASS");
-
-  if (missing.length > 0) {
+  if (!user || !pass) {
     throw new Error(
-      `Missing: ${missing.join(", ")}. ` +
-        "SMTP is the outgoing mail server the app uses to send backup emails. " +
-        "SMTP_HOST is the server hostname from your mail provider " +
-        "(e.g. smtp.gmail.com, smtp.office365.com, smtp.sendgrid.net). " +
-        "Set SMTP_HOST, SMTP_PORT (often 587), SMTP_USER, and SMTP_PASS in Vercel → Environment Variables.",
+      "Missing mail credentials. Set MAIL_USER + MAIL_PASS (Gmail App Password), same as BWA — or SMTP_USER + SMTP_PASS. " +
+        "Google Account → Security → 2-Step Verification → App passwords.",
     );
   }
+  return { user, pass };
+}
 
-  const smtpPort = Number(portRaw);
-  if (Number.isNaN(smtpPort)) {
-    throw new Error("SMTP_PORT must be a number (e.g. 587).");
+/**
+ * Nodemailer setup aligned with BWA Webseite (lib/email.ts):
+ * - If SMTP_HOST is set: custom host/port (SendGrid, Office365, etc.)
+ * - Else: service "gmail" + pool/rateLimit (no SMTP_HOST/SMTP_PORT needed)
+ */
+export function createSmtpTransporter() {
+  const { user, pass } = getMailCredentials();
+  const smtpHost = process.env.SMTP_HOST?.trim();
+
+  if (smtpHost) {
+    const portRaw = process.env.SMTP_PORT?.trim() || "587";
+    const smtpPort = Number(portRaw);
+    if (Number.isNaN(smtpPort)) {
+      throw new Error("SMTP_PORT must be a number (e.g. 587).");
+    }
+    return nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: process.env.SMTP_SECURE === "true" || smtpPort === 465,
+      auth: { user, pass },
+    });
   }
 
   return nodemailer.createTransport({
-    host,
-    port: smtpPort,
-    secure: process.env.SMTP_SECURE === "true" || smtpPort === 465,
+    service: "gmail",
     auth: { user, pass },
+    pool: true,
+    maxConnections: 1,
+    rateDelta: 20000,
+    rateLimit: 5,
   });
+}
+
+/** "From" header: MAIL_FROM, else same account as MAIL_USER / SMTP_USER. */
+export function getMailFrom(): string {
+  const explicit = process.env.MAIL_FROM?.trim();
+  if (explicit?.length) return explicit;
+  const user =
+    process.env.MAIL_USER?.trim() ||
+    process.env.SMTP_USER?.trim();
+  if (!user?.length) {
+    throw new Error("Missing MAIL_FROM or MAIL_USER / SMTP_USER.");
+  }
+  return user;
+}
+
+export function formatBackupFromHeader(mailFrom: string): string {
+  if (mailFrom.includes("<") && mailFrom.includes(">")) return mailFrom;
+  return `"Better Studio Buchhaltung" <${mailFrom}>`;
 }
 
 export async function loadBackupPayloadForUser(supabase: SupabaseClient, userId: string) {
@@ -78,7 +106,7 @@ export async function sendBackupEmail(params: {
   const json = JSON.stringify(params.payload, null, 2);
   const filename = `better-studio-buchhaltung-backup-${dateStr}.json`;
   await params.transporter.sendMail({
-    from: params.mailFrom,
+    from: formatBackupFromHeader(params.mailFrom),
     to: params.to,
     subject: params.subject,
     text: params.text,
