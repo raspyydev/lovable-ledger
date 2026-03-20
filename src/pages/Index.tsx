@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, ArrowDownUp, Tag, PieChart, BarChart3 } from 'lucide-react';
+import { BookOpen, ArrowDownUp, Tag, PieChart, BarChart3, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBookkeepingStore } from '@/lib/store';
 import { TabId } from '@/lib/types';
 import EinnahmenTab from '@/components/ledger/EinnahmenTab';
@@ -20,6 +23,7 @@ const tabs: { id: TabId; label: string; icon: typeof BookOpen }[] = [
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabId>('einnahmen');
   const store = useBookkeepingStore();
+  const { signOut } = useAuth();
 
   if (store.loading) {
     return (
@@ -43,7 +47,7 @@ export default function Index() {
               <p className="text-[11px] text-muted-foreground">Finanzen auf Autopilot</p>
             </div>
           </div>
-          <div className="flex items-center gap-6 text-right">
+          <div className="flex items-center gap-4 sm:gap-6 text-right">
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Gewinn</p>
               <p className={`text-xl font-mono-nums font-medium tracking-tight ${store.gewinn >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -62,6 +66,21 @@ export default function Index() {
                 {store.verfuegbarPrivat >= 0 ? '+' : ''}{store.verfuegbarPrivat.toFixed(2)} €
               </p>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => void signOut()}
+                  aria-label="Abmelden"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Abmelden</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </header>

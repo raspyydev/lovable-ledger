@@ -1,17 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Einnahme, Ausgabe, Kategorie, DEFAULT_KATEGORIEN } from './types';
 
+type EinnahmeRow = Database['public']['Tables']['einnahmen']['Row'];
+type AusgabeRow = Database['public']['Tables']['ausgaben']['Row'];
+type KategorieRow = Database['public']['Tables']['kategorien']['Row'];
+
 // Map DB row to app types
-function mapEinnahme(row: any): Einnahme {
+function mapEinnahme(row: EinnahmeRow): Einnahme {
   return { id: row.id, datum: row.datum, belegnr: row.belegnr, beschreibung: row.beschreibung, kategorie: row.kategorie, brutto: Number(row.brutto), zahlungsart: row.zahlungsart };
 }
 
-function mapAusgabe(row: any): Ausgabe {
+function mapAusgabe(row: AusgabeRow): Ausgabe {
   return { id: row.id, datum: row.datum, belegnr: row.belegnr, ausgaben: row.ausgaben, beschreibung: row.beschreibung, kategorie: row.kategorie, netto: Number(row.netto), ustProzent: Number(row.ust_prozent), ustBetrag: Number(row.ust_betrag), brutto: Number(row.brutto), zahlungsart: row.zahlungsart };
 }
 
-function mapKategorie(row: any): Kategorie {
+function mapKategorie(row: KategorieRow): Kategorie {
   return { id: row.id, name: row.name, typ: row.typ, farbe: row.farbe };
 }
 
