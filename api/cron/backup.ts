@@ -16,7 +16,7 @@ import {
   createSmtpTransporter,
   loadBackupPayloadForUser,
   sendBackupEmail,
-} from "../lib/backup-shared";
+} from "../lib/backup-shared.js";
 
 function isAuthorized(req: VercelRequest): boolean {
   const secret = process.env.CRON_SECRET;

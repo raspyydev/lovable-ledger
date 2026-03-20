@@ -11,7 +11,7 @@ import {
   createSmtpTransporter,
   loadBackupPayloadForUser,
   sendBackupEmail,
-} from "../lib/backup-shared";
+} from "../lib/backup-shared.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
