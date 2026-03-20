@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,9 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
 
 const credentialsSchema = z.object({
   email: z.string().email("Bitte eine gültige E-Mail eingeben."),
@@ -38,18 +36,6 @@ const features = [
   { icon: PieChart, title: "Steuer-Rücklagen", desc: "Schätzungen auf einen Blick — ohne Tabellenchaos." },
   { icon: Sparkles, title: "Schnell & ruhig", desc: "Weniger Klicks, mehr Überblick für dein Studio." },
 ] as const;
-
-function passwordStrength(password: string): { level: number; label: string } {
-  if (!password) return { level: 0, label: "" };
-  let pts = 0;
-  if (password.length >= 6) pts += 1;
-  if (password.length >= 10) pts += 1;
-  if (/\d/.test(password)) pts += 1;
-  if (/[^A-Za-z0-9]/.test(password)) pts += 1;
-  const level = Math.min(pts, 4);
-  const labels = ["", "Ausbaufähig", "Okay", "Gut", "Stark"];
-  return { level, label: labels[level] ?? "" };
-}
 
 function LoginBackdrop() {
   return (
@@ -161,86 +147,32 @@ function FieldBlock({
   );
 }
 
-function PasswordStrength({ password }: { password: string }) {
-  const { level, label } = useMemo(() => passwordStrength(password), [password]);
-  if (!password) return null;
-
-  return (
-    <div className="space-y-2 pt-1">
-      <div className="flex gap-1">
-        {[1, 2, 3, 4].map((i) => (
-          <motion.div
-            key={i}
-            className={cn(
-              "h-1 flex-1 rounded-full bg-muted transition-colors",
-              i <= level && level === 1 && "bg-amber-500/80",
-              i <= level && level === 2 && "bg-amber-400/90",
-              i <= level && level === 3 && "bg-emerald-500/70",
-              i <= level && level === 4 && "bg-emerald-500",
-            )}
-            initial={false}
-            animate={{ scaleY: i <= level ? 1 : 0.6, opacity: i <= level ? 1 : 0.35 }}
-            transition={{ type: "spring", stiffness: 500, damping: 35 }}
-          />
-        ))}
-      </div>
-      {label ? (
-        <p className="text-[11px] text-muted-foreground">
-          Passwortstärke: <span className="font-medium text-foreground">{label}</span>
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
 export default function Login() {
-  const { signIn, signUp, isConfigured } = useAuth();
+  const { signIn, isConfigured } = useAuth();
   const reduceMotion = useReducedMotion();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [pending, setPending] = useState<"signIn" | "signUp" | null>(null);
-  const [showPwIn, setShowPwIn] = useState(false);
-  const [showPwUp, setShowPwUp] = useState(false);
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [shakeId, setShakeId] = useState(0);
 
-  const signInForm = useForm<CredentialsForm>({
+  const form = useForm<CredentialsForm>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: { email: "", password: "" },
   });
-
-  const signUpForm = useForm<CredentialsForm>({
-    resolver: zodResolver(credentialsSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const signupPassword = signUpForm.watch("password");
 
   const spring = reduceMotion
     ? { duration: 0 }
     : { type: "spring" as const, stiffness: 380, damping: 32 };
 
-  async function onSignIn(data: CredentialsForm) {
+  async function onSubmit(data: CredentialsForm) {
     setSubmitError(null);
-    setPending("signIn");
+    setPending(true);
     const { error } = await signIn(data.email, data.password);
-    setPending(null);
+    setPending(false);
     if (error) {
       setSubmitError(error.message);
       setShakeId((n) => n + 1);
     }
-  }
-
-  async function onSignUp(data: CredentialsForm) {
-    setSubmitError(null);
-    setPending("signUp");
-    const { error } = await signUp(data.email, data.password);
-    setPending(null);
-    if (error) {
-      setSubmitError(error.message);
-      setShakeId((n) => n + 1);
-      return;
-    }
-    toast.success("Konto erstellt. Bei aktivierter E-Mail-Bestätigung bitte Postfach prüfen.");
   }
 
   if (!isConfigured) {
@@ -283,7 +215,6 @@ export default function Login() {
       <LoginBackdrop />
 
       <div className="relative z-10 flex min-h-screen flex-col lg:flex-row">
-        {/* Brand column */}
         <motion.aside
           className="relative hidden lg:flex lg:w-[46%] xl:w-[44%] lg:flex-col lg:justify-between lg:border-r lg:border-border/40 lg:bg-card/20 lg:px-12 lg:py-14 xl:px-16"
           initial={reduceMotion ? false : { opacity: 0, x: -24 }}
@@ -345,7 +276,6 @@ export default function Login() {
           </div>
         </motion.aside>
 
-        {/* Form column */}
         <div className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8 lg:py-14">
           <motion.div
             className="mb-8 flex w-full max-w-[420px] items-center gap-3 lg:hidden"
@@ -373,168 +303,83 @@ export default function Login() {
             <ShakeWrapper shakeId={shakeId} reduceMotion={Boolean(reduceMotion)}>
               <Card className="relative overflow-hidden border-border/50 bg-card/80 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
-                <Tabs
-                  value={activeTab}
-                  onValueChange={(v) => {
-                    setActiveTab(v as "signin" | "signup");
-                    setSubmitError(null);
-                    signInForm.clearErrors();
-                    signUpForm.clearErrors();
-                  }}
-                  className="w-full"
-                >
-                  <CardHeader className="space-y-1 border-b border-border/40 bg-muted/20 px-6 pb-4 pt-6">
-                    <CardTitle className="text-xl font-semibold tracking-tight">
-                      {activeTab === "signin" ? "Anmelden" : "Konto anlegen"}
-                    </CardTitle>
-                    <CardDescription>
-                      {activeTab === "signin"
-                        ? "Gib deine Zugangsdaten ein — wir holen dich sofort ins Dashboard."
-                        : "Neu hier? In Sekunden startklar. Danach kannst du direkt buchen."}
-                    </CardDescription>
-                    <TabsList className="mt-5 grid h-11 w-full grid-cols-2 gap-1 rounded-xl border border-border/40 bg-muted/40 p-1 shadow-inner">
-                      <TabsTrigger
-                        value="signin"
-                        className="rounded-lg text-muted-foreground transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                      >
-                        Anmelden
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="signup"
-                        className="rounded-lg text-muted-foreground transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                      >
-                        Registrieren
-                      </TabsTrigger>
-                    </TabsList>
-                  </CardHeader>
+                <CardHeader className="space-y-1 border-b border-border/40 bg-muted/20 px-6 pb-5 pt-6">
+                  <CardTitle className="text-xl font-semibold tracking-tight">Anmelden</CardTitle>
+                  <CardDescription>
+                    Gib deine Zugangsdaten ein — wir holen dich sofort ins Dashboard.
+                  </CardDescription>
+                </CardHeader>
 
-                  <CardContent className="space-y-4 px-6 pb-8 pt-6">
-                    <AnimatePresence mode="wait">
-                      {submitError ? (
-                        <motion.div
-                          key={submitError}
-                          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                          animate={{ opacity: 1, height: "auto", marginBottom: 4 }}
-                          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                <CardContent className="space-y-4 px-6 pb-8 pt-6">
+                  <AnimatePresence mode="wait">
+                    {submitError ? (
+                      <motion.div
+                        key={submitError}
+                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginBottom: 4 }}
+                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                      >
+                        <Alert
+                          variant="destructive"
+                          className="border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/15"
                         >
-                          <Alert
-                            variant="destructive"
-                            className="border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/15"
-                          >
-                            <AlertDescription className="text-sm font-medium">{submitError}</AlertDescription>
-                          </Alert>
-                        </motion.div>
-                      ) : null}
-                    </AnimatePresence>
+                          <AlertDescription className="text-sm font-medium">{submitError}</AlertDescription>
+                        </Alert>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
 
-                    <TabsContent value="signin" className="mt-0 space-y-5 outline-none" forceMount>
-                      <form
-                        className={cn("space-y-5", activeTab !== "signin" && "hidden")}
-                        onSubmit={signInForm.handleSubmit(onSignIn)}
-                        noValidate
-                      >
-                        <FieldBlock
-                          id="signin-email"
-                          label="E-Mail"
-                          type="email"
-                          autoComplete="email"
-                          error={signInForm.formState.errors.email?.message}
-                          icon={Mail}
-                          register={signInForm.register}
-                          name="email"
-                          showPassword={showPwIn}
-                          onTogglePassword={() => setShowPwIn((v) => !v)}
-                          disabled={pending !== null}
-                        />
-                        <FieldBlock
-                          id="signin-password"
-                          label="Passwort"
-                          type="password"
-                          autoComplete="current-password"
-                          error={signInForm.formState.errors.password?.message}
-                          icon={Lock}
-                          register={signInForm.register}
-                          name="password"
-                          showPassword={showPwIn}
-                          onTogglePassword={() => setShowPwIn((v) => !v)}
-                          disabled={pending !== null}
-                        />
-                        <Button
-                          type="submit"
-                          disabled={pending !== null}
-                          className="group relative h-11 w-full overflow-hidden rounded-xl bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-[1.03] active:scale-[0.99]"
-                        >
-                          <span className="relative z-10 flex items-center justify-center gap-2 font-medium">
-                            {pending === "signIn" ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                Weiter zum Dashboard
-                                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                              </>
-                            )}
-                          </span>
-                          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                        </Button>
-                      </form>
-                    </TabsContent>
+                  <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+                    <FieldBlock
+                      id="login-email"
+                      label="E-Mail"
+                      type="email"
+                      autoComplete="email"
+                      error={form.formState.errors.email?.message}
+                      icon={Mail}
+                      register={form.register}
+                      name="email"
+                      showPassword={showPassword}
+                      onTogglePassword={() => setShowPassword((v) => !v)}
+                      disabled={pending}
+                    />
+                    <FieldBlock
+                      id="login-password"
+                      label="Passwort"
+                      type="password"
+                      autoComplete="current-password"
+                      error={form.formState.errors.password?.message}
+                      icon={Lock}
+                      register={form.register}
+                      name="password"
+                      showPassword={showPassword}
+                      onTogglePassword={() => setShowPassword((v) => !v)}
+                      disabled={pending}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={pending}
+                      className="group relative h-11 w-full overflow-hidden rounded-xl bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-[1.03] active:scale-[0.99]"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2 font-medium">
+                        {pending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            Weiter zum Dashboard
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                          </>
+                        )}
+                      </span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    </Button>
+                  </form>
 
-                    <TabsContent value="signup" className="mt-0 space-y-5 outline-none" forceMount>
-                      <form
-                        className={cn("space-y-5", activeTab !== "signup" && "hidden")}
-                        onSubmit={signUpForm.handleSubmit(onSignUp)}
-                        noValidate
-                      >
-                        <FieldBlock
-                          id="signup-email"
-                          label="E-Mail"
-                          type="email"
-                          autoComplete="email"
-                          error={signUpForm.formState.errors.email?.message}
-                          icon={Mail}
-                          register={signUpForm.register}
-                          name="email"
-                          showPassword={showPwUp}
-                          onTogglePassword={() => setShowPwUp((v) => !v)}
-                          disabled={pending !== null}
-                        />
-                        <div>
-                          <FieldBlock
-                            id="signup-password"
-                            label="Passwort"
-                            type="password"
-                            autoComplete="new-password"
-                            error={signUpForm.formState.errors.password?.message}
-                            icon={Lock}
-                            register={signUpForm.register}
-                            name="password"
-                            showPassword={showPwUp}
-                            onTogglePassword={() => setShowPwUp((v) => !v)}
-                            disabled={pending !== null}
-                          />
-                          <PasswordStrength password={signupPassword} />
-                        </div>
-                        <Button
-                          type="submit"
-                          variant="secondary"
-                          disabled={pending !== null}
-                          className="h-11 w-full rounded-xl border border-border/60 bg-secondary/80 font-medium shadow-sm backdrop-blur-sm transition-all hover:bg-secondary active:scale-[0.99]"
-                        >
-                          {pending === "signUp" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "Kostenlos registrieren"
-                          )}
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    <p className="pt-1 text-center text-[11px] leading-relaxed text-muted-foreground">
-                      Auth läuft über Supabase — bitte in deinem Projekt Datenschutz &amp; AGB wie gewohnt abbilden.
-                    </p>
-                  </CardContent>
-                </Tabs>
+                  <p className="pt-1 text-center text-[11px] leading-relaxed text-muted-foreground">
+                    Auth läuft über Supabase — neue Konten legst du im Supabase-Dashboard an.
+                  </p>
+                </CardContent>
               </Card>
             </ShakeWrapper>
           </motion.div>
