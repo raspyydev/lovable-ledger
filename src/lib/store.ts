@@ -7,17 +7,45 @@ type EinnahmeRow = Database['public']['Tables']['einnahmen']['Row'];
 type AusgabeRow = Database['public']['Tables']['ausgaben']['Row'];
 type KategorieRow = Database['public']['Tables']['kategorien']['Row'];
 
-// Map DB row to app types
+type Zahlungsart = Einnahme['zahlungsart'];
+type KategorieTyp = Kategorie['typ'];
+
+// Map DB row to app types (PostgREST uses string; app uses narrowed literals)
 function mapEinnahme(row: EinnahmeRow): Einnahme {
-  return { id: row.id, datum: row.datum, belegnr: row.belegnr, beschreibung: row.beschreibung, kategorie: row.kategorie, brutto: Number(row.brutto), zahlungsart: row.zahlungsart };
+  return {
+    id: row.id,
+    datum: row.datum,
+    belegnr: row.belegnr,
+    beschreibung: row.beschreibung,
+    kategorie: row.kategorie,
+    brutto: Number(row.brutto),
+    zahlungsart: row.zahlungsart as Zahlungsart,
+  };
 }
 
 function mapAusgabe(row: AusgabeRow): Ausgabe {
-  return { id: row.id, datum: row.datum, belegnr: row.belegnr, ausgaben: row.ausgaben, beschreibung: row.beschreibung, kategorie: row.kategorie, netto: Number(row.netto), ustProzent: Number(row.ust_prozent), ustBetrag: Number(row.ust_betrag), brutto: Number(row.brutto), zahlungsart: row.zahlungsart };
+  return {
+    id: row.id,
+    datum: row.datum,
+    belegnr: row.belegnr,
+    ausgaben: row.ausgaben,
+    beschreibung: row.beschreibung,
+    kategorie: row.kategorie,
+    netto: Number(row.netto),
+    ustProzent: Number(row.ust_prozent),
+    ustBetrag: Number(row.ust_betrag),
+    brutto: Number(row.brutto),
+    zahlungsart: row.zahlungsart as Zahlungsart,
+  };
 }
 
 function mapKategorie(row: KategorieRow): Kategorie {
-  return { id: row.id, name: row.name, typ: row.typ, farbe: row.farbe };
+  return {
+    id: row.id,
+    name: row.name,
+    typ: row.typ as KategorieTyp,
+    farbe: row.farbe,
+  };
 }
 
 export function useBookkeepingStore() {

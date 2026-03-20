@@ -116,4 +116,40 @@
   .ease-ledger {
     transition-timing-function: cubic-bezier(0.2, 0.0, 0, 1.0);
   }
+
+  /* Login hero: slow drifting gradient orbs (respects reduced motion via JS; CSS is subtle) */
+  @keyframes login-drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(2%, -3%) scale(1.05);
+    }
+    66% {
+      transform: translate(-3%, 2%) scale(0.95);
+    }
+  }
+
+  .animate-login-drift {
+    animation: login-drift 18s ease-in-out infinite;
+  }
+
+  .animate-login-drift-delayed {
+    animation: login-drift 22s ease-in-out infinite;
+    animation-delay: -6s;
+  }
+
+  .animate-login-drift-slow {
+    animation: login-drift 28s ease-in-out infinite;
+    animation-delay: -12s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-login-drift,
+    .animate-login-drift-delayed,
+    .animate-login-drift-slow {
+      animation: none;
+    }
+  }
 }
