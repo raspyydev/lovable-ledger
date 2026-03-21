@@ -21,7 +21,7 @@ import {
 } from "../lib/backup-shared.js";
 
 function isAuthorized(req: VercelRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = process.env.CRON_SECRET; 
   if (!secret?.length) return false;
   const h = req.headers.authorization;
   return h === `Bearer ${secret}`;
