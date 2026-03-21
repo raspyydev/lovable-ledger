@@ -18,21 +18,17 @@ export default function ZusammenfassungTab({
   einkommensteuerRuecklageProzent,
 }: Props) {
   const cards = [
-    { label: 'Umsatz (Einnahmen)', value: totalEinnahmen, icon: TrendingUp, positive: true },
-    { label: 'Ausgaben (Brutto)', value: totalAusgabenBrutto, icon: TrendingDown, positive: false },
-    { label: 'Gewinn / Verlust', value: gewinn, icon: Wallet, positive: gewinn >= 0 },
-    { label: `Rücklage Einkommensteuer (ca. ${einkommensteuerRuecklageProzent} %)`, value: steuerRuecklage, icon: Landmark, positive: false },
-    { label: 'Verfügbar (Privat / Reinvestition)', value: verfuegbarPrivat, icon: PiggyBank, positive: verfuegbarPrivat >= 0 },
+    { label: 'Einnahmen', value: totalEinnahmen, icon: TrendingUp, positive: true },
+    { label: 'Ausgaben', value: totalAusgabenBrutto, icon: TrendingDown, positive: false },
+    { label: 'Gewinn', value: gewinn, icon: Wallet, positive: gewinn >= 0 },
+    { label: `ESt-Rücklage (${einkommensteuerRuecklageProzent}%)`, value: steuerRuecklage, icon: Landmark, positive: false },
+    { label: 'Verfügbar', value: verfuegbarPrivat, icon: PiggyBank, positive: verfuegbarPrivat >= 0 },
   ];
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Co-Pilot · Zusammenfassung</h2>
-        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          Better Studio Buchhaltung (Kleinunternehmer §19 UStG): umsatzsteuerfrei. Gewinn = Einnahmen − Ausgaben (Brutto).
-          Die ESt-Rücklage ist eine Co-Pilot-Schätzung auf den Gewinn — keine Steuerberatung.
-        </p>
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Überblick</h2>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
@@ -55,25 +51,17 @@ export default function ZusammenfassungTab({
           <span className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Betrag €</span>
         </div>
         {[
-          { label: 'Umsatz (Einnahmen)', value: totalEinnahmen, cls: 'text-success' },
-          { label: '− Ausgaben (Brutto)', value: -totalAusgabenBrutto, cls: 'text-destructive' },
-          { label: '= Gewinn / Verlust', value: gewinn, cls: gewinn >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
-          { label: `− Rücklage Einkommensteuer (ca. ${einkommensteuerRuecklageProzent} %)`, value: -steuerRuecklage, cls: 'text-muted-foreground' },
-          { label: '= Verfügbar (für dich)', value: verfuegbarPrivat, cls: verfuegbarPrivat >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
+          { label: 'Einnahmen', value: totalEinnahmen, cls: 'text-success' },
+          { label: '− Ausgaben', value: -totalAusgabenBrutto, cls: 'text-destructive' },
+          { label: '= Gewinn', value: gewinn, cls: gewinn >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
+          { label: `− ESt-Rücklage (${einkommensteuerRuecklageProzent}%)`, value: -steuerRuecklage, cls: 'text-muted-foreground' },
+          { label: '= Verfügbar', value: verfuegbarPrivat, cls: verfuegbarPrivat >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
         ].map(row => (
           <div key={row.label} className="grid grid-cols-[1fr_150px] border-b border-border/30 px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/50 sm:px-5">
             <span className="text-sm sm:text-base">{row.label}</span>
             <span className={`text-right font-mono-nums text-sm sm:text-base ${row.cls}`}>{row.value >= 0 ? '+' : ''}{row.value.toFixed(2)} €</span>
           </div>
         ))}
-      </div>
-
-      <div className="rounded-xl border border-border/50 bg-muted/50 p-4 text-sm text-muted-foreground sm:p-5 md:text-base">
-        <p className="mb-1.5 font-semibold text-foreground">Co-Pilot · Krankenversicherung</p>
-        <p>
-          „Verfügbar (Co-Pilot)“ ist nach Abzug der ESt-Rücklage. Plane realistisch zusätzlich mind. ca. 220 €/Monat
-          für die GKV (Stand 2026) ein — Better Studio ersetzt keine Beratung.
-        </p>
       </div>
     </div>
   );

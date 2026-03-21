@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Pencil } from 'lucide-react';
+import { roundMoney } from '@/lib/bookkeepingSort';
 import { Ausgabe, Kategorie, ZAHLUNGSARTEN } from '@/lib/types';
 
 interface Props {
@@ -23,7 +24,7 @@ const emptyForm = (): Omit<Ausgabe, 'id'> => ({
   ustProzent: 19,
   ustBetrag: 0,
   brutto: 0,
-  zahlungsart: 'Rechnung',
+  zahlungsart: 'Stripe',
 });
 
 export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onDelete, totalBrutto, totalNetto }: Props) {
@@ -56,9 +57,10 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
   };
 
   const updateNetto = (netto: number, ustProzent: number) => {
-    const ustBetrag = netto * (ustProzent / 100);
-    const brutto = netto + ustBetrag;
-    setForm(f => ({ ...f, netto, ustProzent, ustBetrag, brutto }));
+    const n = roundMoney(netto);
+    const ustBetrag = roundMoney(n * (ustProzent / 100));
+    const brutto = roundMoney(n + ustBetrag);
+    setForm((f) => ({ ...f, netto: n, ustProzent, ustBetrag, brutto }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,11 +78,8 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
   return (
     <div className="space-y-5 md:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div className="min-w-0 space-y-1.5">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Ausgaben</h2>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-            Hier buchst du Betriebsausgaben. Kleinunternehmer: kein Vorsteuerabzug — fürs Studio zählt das Brutto.
-          </p>
         </div>
         <button
           onClick={() => { setEditingId(null); setForm(emptyForm()); setShowForm(!showForm); }}
@@ -171,26 +170,24 @@ export default function AusgabenTab({ ausgaben, kategorien, onAdd, onUpdate, onD
         <div className="divide-y divide-border/30 min-w-[900px]">
           <AnimatePresence>
             {ausgaben.length === 0 ? (
-              <div className="px-4 py-10 text-center text-sm text-muted-foreground sm:py-12">
-                Noch keine Ausgaben. „Ausgabe erfassen“ — der Co-Pilot rechnet Gewinn und Rücklagen automatisch mit.
-              </div>
+              <div className="px-4 py-10 text-center text-sm text-muted-foreground sm:py-12">Noch keine Ausgaben.</div>
             ) : (
               ausgaben.map(a => (
                 <motion.div key={a.id}
                   initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] items-center px-3 py-3 transition-colors duration-200 ease-studio hover:bg-muted/50 sm:px-4"
+                  className="grid grid-cols-[90px_60px_1fr_110px_90px_60px_70px_90px_90px_70px] items-start gap-y-1 px-3 py-3 transition-colors duration-200 ease-studio hover:bg-muted/50 sm:px-4"
                 >
                   <span className="text-sm font-mono-nums">{a.datum}</span>
-                  <span className="text-sm text-muted-foreground">{a.belegnr}</span>
-                  <span className="text-sm font-medium">{a.beschreibung}</span>
+                  <span className="text-sm tabular-nums text-muted-foreground">{a.belegnr}</span>
+                  <span className="min-w-0 break-words text-sm font-medium leading-snug">{a.beschreibung}</span>
                   <span className="text-xs px-2 py-1 rounded-md bg-secondary text-secondary-foreground w-fit">{a.kategorie}</span>
                   <span className="text-sm font-mono-nums">{a.netto.toFixed(2)}</span>
                   <span className="text-sm font-mono-nums text-muted-foreground">{a.ustProzent}%</span>
                   <span className="text-sm font-mono-nums text-muted-foreground">{a.ustBetrag.toFixed(2)}</span>
                   <span className="text-sm font-mono-nums text-destructive font-medium">-{a.brutto.toFixed(2)}</span>
                   <span className="text-xs text-muted-foreground">{a.zahlungsart}</span>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-start justify-end gap-0.5 pt-0.5">
                     <button type="button" onClick={() => openEdit(a)} className="p-1 text-muted-foreground hover:text-foreground transition-colors" title="Bearbeiten">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>

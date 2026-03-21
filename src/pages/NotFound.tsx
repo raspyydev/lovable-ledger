@@ -15,9 +15,7 @@ const NotFound = () => {
           Better Studio Buchhaltung
         </p>
         <h1 className="mb-2 text-4xl font-semibold tracking-tight">404</h1>
-        <p className="mb-6 text-muted-foreground">
-          Diese Seite gibt es in Better Studio nicht. Der Autopilot findet hier keine Route.
-        </p>
+        <p className="mb-6 text-muted-foreground">Seite nicht gefunden.</p>
         <a
           href="/"
           className="text-sm font-medium text-primary underline underline-offset-4 hover:text-primary/90"

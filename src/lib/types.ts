@@ -2,10 +2,12 @@ export interface Einnahme {
   id: string;
   datum: string;
   belegnr: string;
+  /** External invoice ID from payment provider (e.g. INV-1772223011052-4STWWCEXI). */
+  invoiceId: string;
   beschreibung: string;
   kategorie: string;
   brutto: number;
-  zahlungsart: 'Rechnung' | 'Bar' | 'Überweisung' | 'PayPal' | 'Karte';
+  zahlungsart: 'Stripe' | 'PayPal';
 }
 
 export interface Ausgabe {
@@ -19,7 +21,7 @@ export interface Ausgabe {
   ustProzent: number;
   ustBetrag: number;
   brutto: number;
-  zahlungsart: 'Rechnung' | 'Bar' | 'Überweisung' | 'PayPal' | 'Karte';
+  zahlungsart: 'Stripe' | 'PayPal';
 }
 
 export interface Kategorie {
@@ -35,6 +37,7 @@ export const DEFAULT_KATEGORIEN: Kategorie[] = [
   { id: '1', name: 'Webdesign', typ: 'einnahme', farbe: '210 100% 50%' },
   { id: '2', name: 'Beratung', typ: 'einnahme', farbe: '190 100% 42%' },
   { id: '3', name: 'Entwicklung', typ: 'einnahme', farbe: '170 100% 40%' },
+  { id: '11', name: 'PC-Service', typ: 'einnahme', farbe: '155 70% 40%' },
   { id: '4', name: 'Sonstiges', typ: 'einnahme', farbe: '240 5% 60%' },
   { id: '5', name: 'Büromaterial', typ: 'ausgabe', farbe: '30 100% 50%' },
   { id: '6', name: 'Software', typ: 'ausgabe', farbe: '280 60% 55%' },
@@ -44,6 +47,24 @@ export const DEFAULT_KATEGORIEN: Kategorie[] = [
   { id: '10', name: 'Miete', typ: 'ausgabe', farbe: '20 70% 50%' },
 ];
 
-export const ZAHLUNGSARTEN = ['Rechnung', 'Bar', 'Überweisung', 'PayPal', 'Karte'] as const;
+export const ZAHLUNGSARTEN = ['Stripe', 'PayPal'] as const;
+
+/** Quick-pick labels for income descriptions (Einnahmen form); combine with " · ". */
+export const EINNAHME_BESCHREIBUNG_PRESETS: readonly string[] = [
+  'Full PC Opti',
+  'Full PC Optimierung',
+  'PC Service',
+  'PC',
+  'Webdesign',
+  'Entwicklung',
+  'Beratung',
+  'Support & Wartung',
+  'Grafik / Retusche',
+  'Hosting',
+  'Einrichtung / Setup',
+  'Schulung',
+  'Notdienst',
+  'Sonstiges',
+];
 
 export const MONATE = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'] as const;

@@ -39,27 +39,12 @@ const navItems: { id: TabId; label: string; icon: typeof BookOpen }[] = [
   { id: "monatsuebersicht", label: "Monate", icon: BarChart3 },
 ];
 
-const pageMeta: Record<TabId, { title: string; subtitle: string }> = {
-  einnahmen: {
-    title: "Einnahmen · Umsatz",
-    subtitle: "Kleinunternehmer-Umsatz erfassen — Autopilot summiert oben mit.",
-  },
-  ausgaben: {
-    title: "Ausgaben",
-    subtitle: "Betriebsausgaben mit Netto, USt und Brutto im Blick.",
-  },
-  kategorien: {
-    title: "Kategorien",
-    subtitle: "Dein Co-Pilot bleibt sortiert — Einnahmen und Ausgaben getrennt.",
-  },
-  zusammenfassung: {
-    title: "Co-Pilot · Überblick",
-    subtitle: "Gewinn, ESt-Rücklage und Verfügbarkeit auf einen Blick.",
-  },
-  monatsuebersicht: {
-    title: "Monats-Autopilot",
-    subtitle: "Einnahmen und Ausgaben über das Jahr — visuell und tabellarisch.",
-  },
+const pageMeta: Record<TabId, { title: string; subtitle?: string }> = {
+  einnahmen: { title: "Einnahmen" },
+  ausgaben: { title: "Ausgaben" },
+  kategorien: { title: "Kategorien" },
+  zusammenfassung: { title: "Überblick" },
+  monatsuebersicht: { title: "Monate" },
 };
 
 function SidebarNavPanel({
@@ -321,9 +306,11 @@ export default function Index() {
                 Dashboard
               </p>
               <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl md:text-2xl">{meta.title}</h1>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-1 md:text-base">
-                {meta.subtitle}
-              </p>
+              {meta.subtitle ? (
+                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-1 md:text-base">
+                  {meta.subtitle}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -347,21 +334,18 @@ export default function Index() {
                 value={`${store.gewinn >= 0 ? "+" : ""}${store.gewinn.toFixed(2)} €`}
                 valueClass={store.gewinn >= 0 ? "text-success" : "text-destructive"}
                 icon={TrendingUp}
-                hint="Einnahmen − Ausgaben (Brutto)"
               />
               <KpiCard
-                label="Rücklage ESt (ca.)"
+                label="ESt-Rücklage"
                 value={`−${store.steuerRuecklage.toFixed(2)} €`}
                 valueClass="text-muted-foreground"
                 icon={Landmark}
-                hint="Co-Pilot-Schätzung"
               />
               <KpiCard
-                label="Verfügbar (Co-Pilot)"
+                label="Verfügbar"
                 value={`${store.verfuegbarPrivat >= 0 ? "+" : ""}${store.verfuegbarPrivat.toFixed(2)} €`}
                 valueClass={store.verfuegbarPrivat >= 0 ? "text-success" : "text-destructive"}
                 icon={Wallet}
-                hint="Nach ESt-Rücklage"
               />
             </motion.div>
 
@@ -409,7 +393,12 @@ export default function Index() {
                   einkommensteuerRuecklageProzent={store.einkommensteuerRuecklageProzent}
                 />
               )}
-              {activeTab === "monatsuebersicht" && <MonatsuebersichtTab monthlyData={store.getMonthlyData()} />}
+              {activeTab === "monatsuebersicht" && (
+                <MonatsuebersichtTab
+                  year={store.monatsBerichtsjahr}
+                  monthlyData={store.getMonthlyData(store.monatsBerichtsjahr)}
+                />
+              )}
             </motion.div>
           </div>
         </main>

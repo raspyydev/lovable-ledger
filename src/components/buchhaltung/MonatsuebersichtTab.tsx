@@ -2,18 +2,17 @@ import { MONATE } from '@/lib/types';
 
 interface Props {
   monthlyData: { einnahmen: number; ausgaben: number }[];
+  /** Calendar year the monthly sums refer to (same as store filter). */
+  year: number;
 }
 
-export default function MonatsuebersichtTab({ monthlyData }: Props) {
+export default function MonatsuebersichtTab({ monthlyData, year }: Props) {
   const maxVal = Math.max(...monthlyData.map(m => Math.max(m.einnahmen, m.ausgaben)), 1);
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Monats-Autopilot</h2>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          Einnahmen und Ausgaben pro Monat — dein Jahresverlauf im Better-Studio-Cockpit.
-        </p> 
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Monate {year}</h2>
       </div>
 
       {/* Bar chart */}
@@ -38,11 +37,11 @@ export default function MonatsuebersichtTab({ monthlyData }: Props) {
         <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-border/50 pt-4 sm:mt-5 sm:gap-5 sm:pt-5">
           <div className="flex items-center gap-2.5">
             <div className="h-3 w-3 rounded-sm bg-success/80" />
-            <span className="text-sm text-muted-foreground">Einnahmen (Umsatz)</span>
+            <span className="text-sm text-muted-foreground">Einnahmen</span>
           </div>
           <div className="flex items-center gap-2.5">
             <div className="h-3 w-3 rounded-sm bg-destructive/60" />
-            <span className="text-sm text-muted-foreground">Ausgaben (Brutto)</span>
+            <span className="text-sm text-muted-foreground">Ausgaben</span>
           </div>
         </div>
       </div>

@@ -13,7 +13,6 @@ import {
   Mail,
   PieChart,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,21 +31,8 @@ const credentialsSchema = z.object({
 type CredentialsForm = z.infer<typeof credentialsSchema>;
 
 const features = [
-  {
-    icon: TrendingUp,
-    title: "Autopilot für laufende Summen",
-    desc: "Better Studio zieht Einnahmen und Ausgaben zusammen — oben siehst du sofort, wo du stehst.",
-  },
-  {
-    icon: PieChart,
-    title: "Co-Pilot für Rücklagen & Überblick",
-    desc: "Steuer-Rücklagen und Verfügbarkeit als klare Leitplanken, nicht als Excel-Rätsel.",
-  },
-  {
-    icon: Sparkles,
-    title: "Gebaut fürs kreative Studio",
-    desc: "Better Studio Buchhaltung: weniger Admin-Kopf, mehr Fokus auf dein Kerngeschäft.",
-  },
+  { icon: TrendingUp, title: "Einnahmen & Ausgaben", desc: "Erfassen und Summen." },
+  { icon: PieChart, title: "Überblick & Monate", desc: "Gewinn und Verlauf." },
 ] as const;
 
 function LoginBackdrop() {
@@ -211,7 +197,7 @@ export default function Login() {
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                       VITE_SUPABASE_PUBLISHABLE_KEY
                     </code>{" "}
-                    an — sonst bleiben Autopilot und Co-Pilot offline.
+                    an.
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -242,24 +228,16 @@ export default function Login() {
                 <p className="text-lg font-semibold tracking-tight" style={{ letterSpacing: "-0.03em" }}>
                   Better Studio
                 </p>
-                <p className="text-xs text-muted-foreground">Buchhaltung fürs kreative Studio</p>
+                <p className="text-xs text-muted-foreground">Buchhaltung</p>
               </div>
             </div>
 
             <h2
-              className="mt-14 max-w-md text-4xl font-semibold leading-[1.1] tracking-tight text-foreground xl:text-[2.75rem]"
-              style={{ letterSpacing: "-0.04em" }}
+              className="mt-14 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground xl:text-4xl"
+              style={{ letterSpacing: "-0.03em" }}
             >
-              Autopilot für Zahlen.
-              <br />
-              <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent dark:from-white dark:via-white/90 dark:to-white/50">
-                Co-Pilot fürs Studio.
-              </span>
+              Better Studio Buchhaltung
             </h2>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Better Studio Buchhaltung bündelt dein Cockpit: Einnahmen, Ausgaben, Monats-Autopilot und
-              Co-Pilot-Überblick — ohne Spreadsheet-Trauma.
-            </p>
           </div>
 
           <ul className="mt-12 space-y-5">
@@ -284,7 +262,7 @@ export default function Login() {
 
           <div className="mt-10 flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>Better Studio · Supabase Auth · verschlüsselte Verbindung · Session im Browser</span>
+            <span>Supabase Auth</span>
           </div>
         </motion.aside>
 
@@ -302,7 +280,7 @@ export default function Login() {
               <p className="text-base font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
                 Better Studio
               </p>
-              <p className="text-xs text-muted-foreground">Willkommen zurück im Cockpit</p>
+              <p className="text-xs text-muted-foreground">Anmelden</p>
             </div>
           </motion.div>
 
@@ -317,9 +295,7 @@ export default function Login() {
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
                 <CardHeader className="space-y-1 border-b border-border/40 bg-muted/20 px-6 pb-5 pt-6">
                   <CardTitle className="text-xl font-semibold tracking-tight">Anmelden bei Better Studio</CardTitle>
-                  <CardDescription>
-                    Zugang zu Better Studio Buchhaltung — Autopilot und Co-Pilot sind für dich bereit.
-                  </CardDescription>
+                  <CardDescription>E-Mail und Passwort.</CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4 px-6 pb-8 pt-6">

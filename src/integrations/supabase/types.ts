@@ -70,6 +70,7 @@ export type Database = {
           created_at: string
           datum: string
           id: string
+          invoice_id: string
           kategorie: string
           user_id: string | null
           zahlungsart: string
@@ -81,6 +82,7 @@ export type Database = {
           created_at?: string
           datum?: string
           id?: string
+          invoice_id?: string
           kategorie?: string
           user_id?: string | null
           zahlungsart?: string
@@ -92,6 +94,7 @@ export type Database = {
           created_at?: string
           datum?: string
           id?: string
+          invoice_id?: string
           kategorie?: string
           user_id?: string | null
           zahlungsart?: string
