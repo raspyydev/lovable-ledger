@@ -254,7 +254,7 @@ export function useBookkeepingStore() {
   const totalAusgabenBrutto = roundMoney(ausgaben.reduce((s, a) => s + a.brutto, 0));
   const totalAusgabenNetto = roundMoney(ausgaben.reduce((s, a) => s + a.netto, 0));
   const gewinn = roundMoney(totalEinnahmen - totalAusgabenBrutto);
-  const EINKOMMENSTEUER_RUECKLAGE_PROZENT = 25;
+  const EINKOMMENSTEUER_RUECKLAGE_PROZENT = 35;
   const steuerRuecklage = gewinn > 0 ? roundMoney(gewinn * (EINKOMMENSTEUER_RUECKLAGE_PROZENT / 100)) : 0;
   const verfuegbarPrivat = roundMoney(gewinn - steuerRuecklage);
 
