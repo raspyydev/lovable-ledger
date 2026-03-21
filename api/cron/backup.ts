@@ -1,5 +1,5 @@
 /**
- * Daily backup cron (Vercel): exports einnahmen, ausgaben, kategorien per auth user and e-mails JSON via nodemailer.
+ * Daily backup cron (Vercel): e-mails JSON attachment with only { einnahmen, ausgaben } per user.
  *
  * Vercel: set CRON_SECRET — requests receive Authorization: Bearer <CRON_SECRET>.
  *

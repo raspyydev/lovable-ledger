@@ -78,19 +78,14 @@ export function formatBackupFromHeader(mailFrom: string): string {
 }
 
 export async function loadBackupPayloadForUser(supabase: SupabaseClient, userId: string) {
-  const [eRes, aRes, kRes] = await Promise.all([
+  const [eRes, aRes] = await Promise.all([
     supabase.from("einnahmen").select("*").eq("user_id", userId).order("datum", { ascending: false }),
     supabase.from("ausgaben").select("*").eq("user_id", userId).order("datum", { ascending: false }),
-    supabase.from("kategorien").select("*").eq("user_id", userId).order("created_at", { ascending: true }),
   ]);
 
   return {
-    exportedAt: new Date().toISOString(),
-    app: "Better Studio Buchhaltung",
-    userId,
     einnahmen: eRes.data ?? [],
     ausgaben: aRes.data ?? [],
-    kategorien: kRes.data ?? [],
   };
 }
 
