@@ -1,13 +1,24 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Pencil, Hash } from 'lucide-react';
+import { Plus, Trash2, Pencil, Hash, ClipboardPaste } from 'lucide-react';
+import { toast } from 'sonner';
 import { Einnahme, Kategorie, ZAHLUNGSARTEN, EINNAHME_BESCHREIBUNG_PRESETS } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { parseInvoicePaste, isPaidStatus } from '@/lib/invoicePasteImport';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Props {
   einnahmen: Einnahme[];
   kategorien: Kategorie[];
-  onAdd: (e: Einnahme) => void;
+  onAdd: (e: Einnahme) => void | Promise<void>;
   onUpdate: (e: Einnahme) => void;
   onDelete: (id: string) => void;
   total: number;
@@ -17,6 +28,8 @@ const emptyForm = (): Omit<Einnahme, 'id'> => ({
   datum: new Date().toISOString().slice(0, 10),
   belegnr: '',
   invoiceId: '',
+  kundeName: '',
+  kundeEmail: '',
   beschreibung: '',
   kategorie: '',
   brutto: 0,
@@ -24,7 +37,7 @@ const emptyForm = (): Omit<Einnahme, 'id'> => ({
 });
 
 const TABLE_GRID =
-  'grid min-w-[1000px] grid-cols-[100px_72px_minmax(200px,280px)_minmax(160px,1fr)_minmax(100px,120px)_96px_88px_72px]';
+  'grid min-w-[1180px] grid-cols-[100px_72px_minmax(160px,200px)_minmax(140px,200px)_minmax(140px,1fr)_minmax(100px,120px)_96px_88px_72px]';
 
 const BESCHREIBUNG_SEP = ' · ';
 
@@ -45,13 +58,46 @@ function nextBelegnr(einnahmen: Einnahme[]): string {
   return String(max + 1).padStart(3, '0');
 }
 
+/** Next `count` receipt numbers based on current list (for batch import). */
+function takeBelegnrSeries(einnahmen: Einnahme[], count: number): string[] {
+  let max = 0;
+  for (const e of einnahmen) {
+    const digits = e.belegnr.replace(/\D/g, '');
+    const n = parseInt(digits, 10);
+    if (!Number.isNaN(n)) max = Math.max(max, n);
+  }
+  const out: string[] = [];
+  for (let i = 0; i < count; i++) {
+    max += 1;
+    out.push(String(max).padStart(3, '0'));
+  }
+  return out;
+}
+
 const BRUTTO_QUICK_ADD = [50, 100, 150, 250, 500] as const;
 
 export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, onDelete, total }: Props) {
   const [form, setForm] = useState(emptyForm());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importPaste, setImportPaste] = useState('');
+  const [importKategorie, setImportKategorie] = useState('');
+  const [importZahlungsart, setImportZahlungsart] = useState<Einnahme['zahlungsart']>('Stripe');
+  const [importBeschreibungPrefix, setImportBeschreibungPrefix] = useState('PC Service');
+  const [importOnlyPaid, setImportOnlyPaid] = useState(true);
+  const [importing, setImporting] = useState(false);
   const incomeKats = kategorien.filter((k) => k.typ === 'einnahme');
+
+  const openImportDialog = () => {
+    setImportPaste('');
+    const pc = incomeKats.find((k) => k.name === 'PC-Service');
+    setImportKategorie(pc?.name ?? incomeKats[0]?.name ?? '');
+    setImportZahlungsart('Stripe');
+    setImportBeschreibungPrefix('PC Service');
+    setImportOnlyPaid(true);
+    setImportOpen(true);
+  };
 
   const beschreibungParts = useMemo(() => splitBeschreibung(form.beschreibung), [form.beschreibung]);
 
@@ -79,6 +125,8 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
       datum: e.datum,
       belegnr: e.belegnr,
       invoiceId: e.invoiceId ?? '',
+      kundeName: e.kundeName ?? '',
+      kundeEmail: e.kundeEmail ?? '',
       beschreibung: e.beschreibung,
       kategorie: e.kategorie,
       brutto: e.brutto,
@@ -120,21 +168,192 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
     setShowForm(true);
   };
 
+  const runImport = async () => {
+    const { ok, errors } = parseInvoicePaste(importPaste);
+    if (errors.length && ok.length === 0) {
+      toast.error('Keine gültigen Rechnungen erkannt.', { description: errors.slice(0, 3).join(' ') });
+      return;
+    }
+    const unpaidSkipped = importOnlyPaid
+      ? ok.filter((r) => !isPaidStatus(r.statusLine)).length
+      : 0;
+    let rows = importOnlyPaid ? ok.filter((r) => isPaidStatus(r.statusLine)) : ok;
+    const existingIds = new Set(
+      einnahmen.map((e) => e.invoiceId.trim()).filter(Boolean),
+    );
+    const duplicateCount = rows.filter((r) => existingIds.has(r.invoiceId)).length;
+    rows = rows.filter((r) => !existingIds.has(r.invoiceId));
+    if (!importKategorie.trim()) {
+      toast.error('Bitte eine Kategorie für den Import wählen.');
+      return;
+    }
+    if (rows.length === 0) {
+      toast.error('Nichts zu importieren.', {
+        description:
+          duplicateCount > 0
+            ? 'Alle Invoice-IDs sind bereits erfasst oder es fehlt „Bezahlt“.'
+            : 'Prüfe das Eingabeformat.',
+      });
+      return;
+    }
+    const belegnrs = takeBelegnrSeries(einnahmen, rows.length);
+    setImporting(true);
+    try {
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const prefix = importBeschreibungPrefix.trim();
+        const tail = [r.leistung?.trim(), r.name].filter(Boolean).join(' · ');
+        const beschreibung = prefix.trim() ? `${prefix.trim()} · ${tail || r.name}` : tail || r.name;
+        await Promise.resolve(
+          onAdd({
+            id: crypto.randomUUID(),
+            datum: r.datumIso,
+            belegnr: belegnrs[i],
+            invoiceId: r.invoiceId,
+            kundeName: r.name,
+            kundeEmail: r.email,
+            beschreibung,
+            kategorie: importKategorie,
+            brutto: r.brutto,
+            zahlungsart: importZahlungsart,
+          }),
+        );
+      }
+      const parts = [`${rows.length} Einnahme(n) importiert.`];
+      if (duplicateCount) parts.push(`${duplicateCount} Duplikat(e) übersprungen.`);
+      if (unpaidSkipped) parts.push(`${unpaidSkipped} ohne „Bezahlt“ übersprungen.`);
+      if (errors.length) parts.push(`${errors.length} Block-Fehler (teilweise importiert).`);
+      toast.success(parts.join(' '));
+      setImportOpen(false);
+      setImportPaste('');
+    } catch {
+      toast.error('Import fehlgeschlagen.', { description: 'Netzwerk oder Server prüfen.' });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-5 md:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Einnahmen</h2>
         </div>
-        <button
-          type="button"
-          onClick={toggleFormOpen}
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity ease-studio duration-200 hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
-          Einnahme erfassen
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={openImportDialog}
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors ease-studio duration-200 hover:bg-muted/60"
+          >
+            <ClipboardPaste className="h-4 w-4" />
+            Von Website einfügen
+          </button>
+          <button
+            type="button"
+            onClick={toggleFormOpen}
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity ease-studio duration-200 hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" />
+            Einnahme erfassen
+          </button>
+        </div>
       </div>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-h-[min(90vh,720px)] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Rechnungen aus der Website importieren</DialogTitle>
+            <DialogDescription>
+              Rechnungsliste von der Website kopieren und hier einfügen. Pro Block: Invoice-ID, optional eine oder mehrere
+              Produkt-/Leistungszeilen, dann E-Mail, Kundenname, Datum, Betrag, Bezahlt. Pro erkanntem Block wird eine Einnahme
+              angelegt.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              value={importPaste}
+              onChange={(ev) => setImportPaste(ev.target.value)}
+              placeholder="INV-…&#10;Leistung (optional)&#10;email@…&#10;&#10;Name&#10;&#10;TT.MM.JJJJ&#10;&#10;€…&#10;&#10;Bezahlt"
+              className="min-h-[200px] font-mono text-xs sm:text-sm"
+              spellCheck={false}
+            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Kategorie (alle Zeilen)
+                </label>
+                <select
+                  value={importKategorie}
+                  onChange={(ev) => setImportKategorie(ev.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">Wählen…</option>
+                  {incomeKats.map((k) => (
+                    <option key={k.id} value={k.name}>
+                      {k.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Zahlungsart
+                </label>
+                <select
+                  value={importZahlungsart}
+                  onChange={(ev) => setImportZahlungsart(ev.target.value as Einnahme['zahlungsart'])}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {ZAHLUNGSARTEN.map((z) => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Beschreibung (Präfix)
+              </label>
+              <input
+                type="text"
+                value={importBeschreibungPrefix}
+                onChange={(ev) => setImportBeschreibungPrefix(ev.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="z. B. PC Service"
+              />
+              <p className="text-xs text-muted-foreground">Wird zu „Präfix · Kundenname“; leer lassen für nur Kundenname.</p>
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={importOnlyPaid}
+                onChange={(ev) => setImportOnlyPaid(ev.target.checked)}
+                className="rounded border-border"
+              />
+              Nur Zeilen mit Status „Bezahlt“ importieren
+            </label>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <button
+              type="button"
+              onClick={() => setImportOpen(false)}
+              className="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              Abbrechen
+            </button>
+            <button
+              type="button"
+              disabled={importing || !importPaste.trim()}
+              onClick={() => void runImport()}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {importing ? 'Import…' : 'Importieren'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AnimatePresence>
         {showForm && (
@@ -189,6 +408,26 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
                   className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm"
                   autoComplete="off"
                   spellCheck={false}
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2 lg:col-span-2">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Kunde Name</label>
+                <input
+                  type="text"
+                  value={form.kundeName}
+                  onChange={(ev) => setForm({ ...form, kundeName: ev.target.value })}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  autoComplete="name"
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2 lg:col-span-2">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Kunde E-Mail</label>
+                <input
+                  type="email"
+                  value={form.kundeEmail}
+                  onChange={(ev) => setForm({ ...form, kundeEmail: ev.target.value })}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  autoComplete="email"
                 />
               </div>
               <div className="space-y-1 sm:col-span-2 lg:col-span-1">
@@ -311,7 +550,7 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
 
       <div className="shadow-card overflow-x-auto rounded-xl border border-border/40 bg-card">
         <div className={`${TABLE_GRID} border-b border-border/50 px-3 py-2.5 sm:px-4`}>
-          {['Datum', 'Beleg', 'Invoice ID', 'Beschreibung', 'Kategorie', 'Brutto €', 'Zahlung', ''].map((h, i) => (
+          {['Datum', 'Beleg', 'Invoice ID', 'Kunde', 'Beschreibung', 'Kategorie', 'Brutto €', 'Zahlung', ''].map((h, i) => (
             <span key={`${h}-${i}`} className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {h}
             </span>
@@ -338,6 +577,20 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
                     title={e.invoiceId || undefined}
                   >
                     {e.invoiceId?.trim() ? e.invoiceId : '—'}
+                  </span>
+                  <span className="min-w-0 text-xs leading-snug sm:text-sm">
+                    {e.kundeName?.trim() || e.kundeEmail?.trim() ? (
+                      <>
+                        <span className="block font-medium text-foreground">{e.kundeName?.trim() || '—'}</span>
+                        {e.kundeEmail?.trim() ? (
+                          <span className="block truncate font-mono text-[11px] text-muted-foreground" title={e.kundeEmail}>
+                            {e.kundeEmail}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </span>
                   <span className="min-w-0 break-words text-sm font-medium leading-snug">{e.beschreibung}</span>
                   <span className="w-fit rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground">{e.kategorie}</span>
@@ -368,6 +621,7 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
         </div>
         {einnahmen.length > 0 && (
           <div className={`${TABLE_GRID} border-t border-border bg-muted/30 px-3 py-3 sm:px-4`}>
+            <span />
             <span />
             <span />
             <span />

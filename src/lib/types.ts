@@ -2,8 +2,10 @@ export interface Einnahme {
   id: string;
   datum: string;
   belegnr: string;
-  /** External invoice ID from payment provider (e.g. INV-1772223011052-4STWWCEXI). */
+  /** External invoice ID from payment provider (e.g. INV-…). */
   invoiceId: string;
+  kundeName: string;
+  kundeEmail: string;
   beschreibung: string;
   kategorie: string;
   brutto: number;
