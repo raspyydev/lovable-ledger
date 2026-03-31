@@ -37,7 +37,10 @@ async function nextBelegnr(supabase: SupabaseClient, userId: string): Promise<st
   return String(max + 1).padStart(3, "0");
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+): Promise<VercelResponse | void> {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "Method not allowed" });
