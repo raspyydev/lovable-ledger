@@ -103,4 +103,29 @@ Bezahlt`;
     expect(isPaidStatus('paid')).toBe(true);
     expect(isPaidStatus('Offen')).toBe(false);
   });
+
+  it('parses date with comma and time (website copy)', () => {
+    const raw = `INV-1774988740011-O9IBC7TRC
+Optimizer Pro
+babynick08@web.de
+
+Sintryx
+
+31.03.2026, 22:25
+
+€23.83
+
+Bezahlt`;
+    const { ok, errors } = parseInvoicePaste(raw);
+    expect(errors).toHaveLength(0);
+    expect(ok).toHaveLength(1);
+    expect(ok[0]).toMatchObject({
+      invoiceId: 'INV-1774988740011-O9IBC7TRC',
+      leistung: 'Optimizer Pro',
+      email: 'babynick08@web.de',
+      name: 'Sintryx',
+      datumIso: '2026-03-31',
+      brutto: 23.83,
+    });
+  });
 });

@@ -14,7 +14,8 @@ export interface ParsedInvoiceBlock {
 }
 
 const INV_LINE = /^INV-\d+-[A-Z0-9]+$/i;
-const DATE_DE = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+/** German date, optionally with time as shown on the website (e.g. "31.03.2026, 22:25"). */
+const DATE_DE = /^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:,\s*\d{1,2}:\d{2}(?::\d{2})?)?$/;
 const STATUS_PAID = /bezahlt|paid/i;
 /** First line that looks like an e-mail (website may put product lines before the e-mail). */
 function looksLikeEmailLine(line: string): boolean {
