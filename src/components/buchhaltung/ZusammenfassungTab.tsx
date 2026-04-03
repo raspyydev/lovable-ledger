@@ -1,12 +1,14 @@
-import { TrendingUp, TrendingDown, Wallet, Landmark, PiggyBank } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Landmark, PiggyBank, Shield } from 'lucide-react';
 
 interface Props {
   totalEinnahmen: number;
   totalAusgabenBrutto: number;
   gewinn: number;
   steuerRuecklage: number;
+  sicherheitsRuecklage: number;
   verfuegbarPrivat: number;
   einkommensteuerRuecklageProzent: number;
+  einkommensteuerSicherheitProzent: number;
   /** Federal Grundfreibetrag cap (e.g. 12.348 € ESt 2026 Alleinstehende). */
   einkommensteuerGrundfreibetragEuro: number;
   /** Portion actually deducted from Gewinn (min(Gewinn, cap)). */
@@ -20,8 +22,10 @@ export default function ZusammenfassungTab({
   totalAusgabenBrutto,
   gewinn,
   steuerRuecklage,
+  sicherheitsRuecklage,
   verfuegbarPrivat,
   einkommensteuerRuecklageProzent,
+  einkommensteuerSicherheitProzent,
   einkommensteuerGrundfreibetragEuro,
   einkommensteuerGrundfreibetragAbziehbar,
   einkommensteuerBemessungsgrundlage,
@@ -31,6 +35,12 @@ export default function ZusammenfassungTab({
     { label: 'Ausgaben', value: totalAusgabenBrutto, icon: TrendingDown, positive: false },
     { label: 'Gewinn', value: gewinn, icon: Wallet, positive: gewinn >= 0 },
     { label: `ESt-Rücklage (${einkommensteuerRuecklageProzent}%)`, value: steuerRuecklage, icon: Landmark, positive: false },
+    {
+      label: `Sicherheit (${einkommensteuerSicherheitProzent}%)`,
+      value: sicherheitsRuecklage,
+      icon: Shield,
+      positive: false,
+    },
     { label: 'Verfügbar', value: verfuegbarPrivat, icon: PiggyBank, positive: verfuegbarPrivat >= 0 },
   ];
 
@@ -60,7 +70,12 @@ export default function ZusammenfassungTab({
       cls: 'text-muted-foreground',
     },
     {
-      label: '= Verfügbar',
+      label: `− Sicherheits-Rücklage (${einkommensteuerSicherheitProzent} % vom Gewinn)`,
+      value: -sicherheitsRuecklage,
+      cls: 'text-muted-foreground',
+    },
+    {
+      label: '= Verfügbar (nach allen Rücklagen)',
       value: verfuegbarPrivat,
       cls: verfuegbarPrivat >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold',
     },
@@ -72,7 +87,7 @@ export default function ZusammenfassungTab({
         <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Überblick</h2>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
         {cards.map(c => (
           <div key={c.label} className="shadow-card space-y-2 rounded-xl border border-border/40 bg-card p-4 md:p-5">
             <div className="flex items-center justify-between gap-2">

@@ -4,13 +4,16 @@ import {
   ArrowDownUp,
   BarChart3,
   BookOpen,
+  Calculator,
   CalendarDays,
   Landmark,
   LayoutDashboard,
+  Layers,
   LogOut,
   Mail,
   Menu,
   PieChart,
+  Shield,
   Sparkles,
   Tag,
   TrendingUp,
@@ -29,6 +32,7 @@ import EinnahmenTab from "@/components/buchhaltung/EinnahmenTab";
 import AusgabenTab from "@/components/buchhaltung/AusgabenTab";
 import KategorienTab from "@/components/buchhaltung/KategorienTab";
 import ZusammenfassungTab from "@/components/buchhaltung/ZusammenfassungTab";
+import RuecklagenTab from "@/components/buchhaltung/RuecklagenTab";
 import MonatsuebersichtTab from "@/components/buchhaltung/MonatsuebersichtTab";
 
 const navItems: { id: TabId; label: string; icon: typeof BookOpen }[] = [
@@ -36,6 +40,7 @@ const navItems: { id: TabId; label: string; icon: typeof BookOpen }[] = [
   { id: "ausgaben", label: "Ausgaben", icon: ArrowDownUp },
   { id: "kategorien", label: "Kategorien", icon: Tag },
   { id: "zusammenfassung", label: "Überblick", icon: PieChart },
+  { id: "ruecklagen", label: "Rücklagen", icon: Calculator },
   { id: "monatsuebersicht", label: "Monate", icon: BarChart3 },
 ];
 
@@ -44,6 +49,7 @@ const pageMeta: Record<TabId, { title: string; subtitle?: string }> = {
   ausgaben: { title: "Ausgaben" },
   kategorien: { title: "Kategorien" },
   zusammenfassung: { title: "Überblick" },
+  ruecklagen: { title: "Rücklagen", subtitle: "ESt- und Sicherheits-Puffer planen" },
   monatsuebersicht: { title: "Monate" },
 };
 
@@ -327,7 +333,7 @@ export default function Index() {
             <motion.div
               initial={false}
               animate={{ opacity: 1 }}
-              className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3"
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5"
             >
               <KpiCard
                 label="Gewinn"
@@ -340,6 +346,21 @@ export default function Index() {
                 value={`−${store.steuerRuecklage.toFixed(2)} €`}
                 valueClass="text-muted-foreground"
                 icon={Landmark}
+                hint="Anteil über Grundfreibetrag"
+              />
+              <KpiCard
+                label="Sicherheits-Rücklage"
+                value={`−${store.sicherheitsRuecklage.toFixed(2)} €`}
+                valueClass="text-muted-foreground"
+                icon={Shield}
+                hint={`${store.reserveSicherheitProzent} % vom Gewinn (auch ohne ESt)`}
+              />
+              <KpiCard
+                label="Rücklagen gesamt"
+                value={`−${store.steuerRuecklagePlusSicherheit.toFixed(2)} €`}
+                valueClass="text-muted-foreground"
+                icon={Layers}
+                hint="ESt + Sicherheit"
               />
               <KpiCard
                 label="Verfügbar"
@@ -389,10 +410,27 @@ export default function Index() {
                   totalAusgabenBrutto={store.totalAusgabenBrutto}
                   gewinn={store.gewinn}
                   steuerRuecklage={store.steuerRuecklage}
+                  sicherheitsRuecklage={store.sicherheitsRuecklage}
                   verfuegbarPrivat={store.verfuegbarPrivat}
                   einkommensteuerRuecklageProzent={store.einkommensteuerRuecklageProzent}
+                  einkommensteuerSicherheitProzent={store.einkommensteuerSicherheitProzent}
                   einkommensteuerGrundfreibetragEuro={store.einkommensteuerGrundfreibetragEuro}
                   einkommensteuerGrundfreibetragAbziehbar={store.einkommensteuerGrundfreibetragAbziehbar}
+                  einkommensteuerBemessungsgrundlage={store.einkommensteuerBemessungsgrundlage}
+                />
+              )}
+              {activeTab === "ruecklagen" && (
+                <RuecklagenTab
+                  gewinn={store.gewinn}
+                  steuerRuecklage={store.steuerRuecklage}
+                  sicherheitsRuecklage={store.sicherheitsRuecklage}
+                  steuerRuecklagePlusSicherheit={store.steuerRuecklagePlusSicherheit}
+                  verfuegbarPrivat={store.verfuegbarPrivat}
+                  reserveEstProzent={store.reserveEstProzent}
+                  reserveSicherheitProzent={store.reserveSicherheitProzent}
+                  setReserveEstProzent={store.setReserveEstProzent}
+                  setReserveSicherheitProzent={store.setReserveSicherheitProzent}
+                  grundfreibetragEuro={store.einkommensteuerGrundfreibetragEuro}
                   einkommensteuerBemessungsgrundlage={store.einkommensteuerBemessungsgrundlage}
                 />
               )}
