@@ -260,8 +260,21 @@ export function useBookkeepingStore() {
   const totalAusgabenBrutto = roundMoney(ausgaben.reduce((s, a) => s + a.brutto, 0));
   const totalAusgabenNetto = roundMoney(ausgaben.reduce((s, a) => s + a.netto, 0));
   const gewinn = roundMoney(totalEinnahmen - totalAusgabenBrutto);
-  const EINKOMMENSTEUER_RUECKLAGE_PROZENT = 35;
-  const steuerRuecklage = gewinn > 0 ? roundMoney(gewinn * (EINKOMMENSTEUER_RUECKLAGE_PROZENT / 100)) : 0;
+  /** Flat ESt reserve % on taxable slice after Grundfreibetrag (rough planning figure, not legal advice). */
+  const EINKOMMENSTEUER_RUECKLAGE_PROZENT = 40;
+  /**
+   * Federal basic allowance (EStG), 2026 — same in all Bundesländer including Thüringen.
+   * SteFeG: 12.348 € (Alleinstehende); zu versteuerndes Einkommen is approximated here as Gewinn.
+   */
+  const EINKOMMENSTEUER_GRUNDFREIBETRAG_ALLEINSTEHEND_2026 = 12_348;
+  const grundfreibetragAbziehbar =
+    gewinn > 0 ? roundMoney(Math.min(gewinn, EINKOMMENSTEUER_GRUNDFREIBETRAG_ALLEINSTEHEND_2026)) : 0;
+  const einkommensteuerBemessungsgrundlage =
+    gewinn > 0 ? roundMoney(Math.max(0, gewinn - EINKOMMENSTEUER_GRUNDFREIBETRAG_ALLEINSTEHEND_2026)) : 0;
+  const steuerRuecklage =
+    einkommensteuerBemessungsgrundlage > 0
+      ? roundMoney(einkommensteuerBemessungsgrundlage * (EINKOMMENSTEUER_RUECKLAGE_PROZENT / 100))
+      : 0;
   const verfuegbarPrivat = roundMoney(gewinn - steuerRuecklage);
 
   const einnahmenSorted = useMemo(() => sortEinnahmenByBelegnr(einnahmen), [einnahmen]);
@@ -328,6 +341,9 @@ export function useBookkeepingStore() {
     steuerRuecklage,
     verfuegbarPrivat,
     einkommensteuerRuecklageProzent: EINKOMMENSTEUER_RUECKLAGE_PROZENT,
+    einkommensteuerGrundfreibetragEuro: EINKOMMENSTEUER_GRUNDFREIBETRAG_ALLEINSTEHEND_2026,
+    einkommensteuerGrundfreibetragAbziehbar: grundfreibetragAbziehbar,
+    einkommensteuerBemessungsgrundlage,
     getMonthlyData,
     monatsBerichtsjahr,
   };

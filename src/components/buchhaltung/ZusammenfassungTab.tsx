@@ -7,6 +7,12 @@ interface Props {
   steuerRuecklage: number;
   verfuegbarPrivat: number;
   einkommensteuerRuecklageProzent: number;
+  /** Federal Grundfreibetrag cap (e.g. 12.348 € ESt 2026 Alleinstehende). */
+  einkommensteuerGrundfreibetragEuro: number;
+  /** Portion actually deducted from Gewinn (min(Gewinn, cap)). */
+  einkommensteuerGrundfreibetragAbziehbar: number;
+  /** Gewinn minus Grundfreibetrag; ESt-Rücklage % applies here (planning estimate). */
+  einkommensteuerBemessungsgrundlage: number;
 }
 
 export default function ZusammenfassungTab({
@@ -16,6 +22,9 @@ export default function ZusammenfassungTab({
   steuerRuecklage,
   verfuegbarPrivat,
   einkommensteuerRuecklageProzent,
+  einkommensteuerGrundfreibetragEuro,
+  einkommensteuerGrundfreibetragAbziehbar,
+  einkommensteuerBemessungsgrundlage,
 }: Props) {
   const cards = [
     { label: 'Einnahmen', value: totalEinnahmen, icon: TrendingUp, positive: true },
@@ -24,6 +33,38 @@ export default function ZusammenfassungTab({
     { label: `ESt-Rücklage (${einkommensteuerRuecklageProzent}%)`, value: steuerRuecklage, icon: Landmark, positive: false },
     { label: 'Verfügbar', value: verfuegbarPrivat, icon: PiggyBank, positive: verfuegbarPrivat >= 0 },
   ];
+
+  const detailRows: { label: string; value: number; cls: string }[] = [
+    { label: 'Einnahmen', value: totalEinnahmen, cls: 'text-success' },
+    { label: '− Ausgaben', value: -totalAusgabenBrutto, cls: 'text-destructive' },
+    { label: '= Gewinn', value: gewinn, cls: gewinn >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
+  ];
+  if (gewinn > 0) {
+    detailRows.push(
+      {
+        label: `− Grundfreibetrag ESt 2026 (max. ${einkommensteuerGrundfreibetragEuro.toLocaleString('de-DE')} €, Alleinstehende)`,
+        value: -einkommensteuerGrundfreibetragAbziehbar,
+        cls: 'text-muted-foreground',
+      },
+      {
+        label: '= Bemessungsgrundlage (Schätzung nach Grundfreibetrag)',
+        value: einkommensteuerBemessungsgrundlage,
+        cls: 'text-foreground/90',
+      },
+    );
+  }
+  detailRows.push(
+    {
+      label: `− ESt-Rücklage (${einkommensteuerRuecklageProzent} % der Bemessungsgrundlage)`,
+      value: -steuerRuecklage,
+      cls: 'text-muted-foreground',
+    },
+    {
+      label: '= Verfügbar',
+      value: verfuegbarPrivat,
+      cls: verfuegbarPrivat >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold',
+    },
+  );
 
   return (
     <div className="space-y-5 md:space-y-6">
@@ -50,13 +91,7 @@ export default function ZusammenfassungTab({
           <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Position</span>
           <span className="text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Betrag €</span>
         </div>
-        {[
-          { label: 'Einnahmen', value: totalEinnahmen, cls: 'text-success' },
-          { label: '− Ausgaben', value: -totalAusgabenBrutto, cls: 'text-destructive' },
-          { label: '= Gewinn', value: gewinn, cls: gewinn >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
-          { label: `− ESt-Rücklage (${einkommensteuerRuecklageProzent}%)`, value: -steuerRuecklage, cls: 'text-muted-foreground' },
-          { label: '= Verfügbar', value: verfuegbarPrivat, cls: verfuegbarPrivat >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold' },
-        ].map(row => (
+        {detailRows.map(row => (
           <div key={row.label} className="grid grid-cols-[1fr_150px] border-b border-border/30 px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/50 sm:px-5">
             <span className="text-sm sm:text-base">{row.label}</span>
             <span className={`text-right font-mono-nums text-sm sm:text-base ${row.cls}`}>{row.value >= 0 ? '+' : ''}{row.value.toFixed(2)} €</span>

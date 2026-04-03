@@ -391,6 +391,9 @@ export default function Index() {
                   steuerRuecklage={store.steuerRuecklage}
                   verfuegbarPrivat={store.verfuegbarPrivat}
                   einkommensteuerRuecklageProzent={store.einkommensteuerRuecklageProzent}
+                  einkommensteuerGrundfreibetragEuro={store.einkommensteuerGrundfreibetragEuro}
+                  einkommensteuerGrundfreibetragAbziehbar={store.einkommensteuerGrundfreibetragAbziehbar}
+                  einkommensteuerBemessungsgrundlage={store.einkommensteuerBemessungsgrundlage}
                 />
               )}
               {activeTab === "monatsuebersicht" && (
