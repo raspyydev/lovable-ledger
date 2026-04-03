@@ -3,16 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { sortAusgabenByBelegnr, sortEinnahmenByBelegnr, roundMoney } from './bookkeepingSort';
-import {
-  computePlanningReserves,
-  DEFAULT_EST_RUECKLAGE_PROZENT,
-  DEFAULT_SICHERHEITS_RUECKLAGE_PROZENT,
-  GRUNDFREIBETRAG_ALLEINSTEHEND_2026,
-} from './planningReserves';
 import { Einnahme, Ausgabe, Kategorie, DEFAULT_KATEGORIEN } from './types';
-
-const LS_RESERVE_EST_PCT = 'bs_reserve_est_pct';
-const LS_RESERVE_SICH_PCT = 'bs_reserve_sich_pct';
 
 type EinnahmeRow = Database['public']['Tables']['einnahmen']['Row'];
 type AusgabeRow = Database['public']['Tables']['ausgaben']['Row'];
@@ -73,48 +64,6 @@ export function useBookkeepingStore() {
   const [ausgaben, setAusgaben] = useState<Ausgabe[]>([]);
   const [kategorien, setKategorien] = useState<Kategorie[]>(DEFAULT_KATEGORIEN);
   const [loading, setLoading] = useState(true);
-  const [reserveEstProzent, setReserveEstProzentState] = useState(DEFAULT_EST_RUECKLAGE_PROZENT);
-  const [reserveSicherheitProzent, setReserveSicherheitProzentState] = useState(
-    DEFAULT_SICHERHEITS_RUECKLAGE_PROZENT,
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const e = window.localStorage.getItem(LS_RESERVE_EST_PCT);
-      const s = window.localStorage.getItem(LS_RESERVE_SICH_PCT);
-      if (e != null) {
-        const n = Number(e);
-        if (!Number.isNaN(n) && n >= 0 && n <= 100) setReserveEstProzentState(Math.round(n));
-      }
-      if (s != null) {
-        const n = Number(s);
-        if (!Number.isNaN(n) && n >= 0 && n <= 100) setReserveSicherheitProzentState(Math.round(n));
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const setReserveEstProzent = useCallback((n: number) => {
-    const v = Math.min(100, Math.max(0, Math.round(n)));
-    setReserveEstProzentState(v);
-    try {
-      window.localStorage.setItem(LS_RESERVE_EST_PCT, String(v));
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const setReserveSicherheitProzent = useCallback((n: number) => {
-    const v = Math.min(100, Math.max(0, Math.round(n)));
-    setReserveSicherheitProzentState(v);
-    try {
-      window.localStorage.setItem(LS_RESERVE_SICH_PCT, String(v));
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   useEffect(() => {
     if (!isConfigured || !userId) {
@@ -311,24 +260,9 @@ export function useBookkeepingStore() {
   const totalAusgabenBrutto = roundMoney(ausgaben.reduce((s, a) => s + a.brutto, 0));
   const totalAusgabenNetto = roundMoney(ausgaben.reduce((s, a) => s + a.netto, 0));
   const gewinn = roundMoney(totalEinnahmen - totalAusgabenBrutto);
-  const reserves = useMemo(
-    () =>
-      computePlanningReserves({
-        gewinn,
-        grundfreibetragCap: GRUNDFREIBETRAG_ALLEINSTEHEND_2026,
-        estRuecklageProzent: reserveEstProzent,
-        sicherheitsRuecklageProzent: reserveSicherheitProzent,
-      }),
-    [gewinn, reserveEstProzent, reserveSicherheitProzent],
-  );
-  const {
-    grundfreibetragAbziehbar,
-    einkommensteuerBemessungsgrundlage,
-    steuerRuecklage,
-    sicherheitsRuecklage,
-    steuerRuecklagePlusSicherheit,
-    verfuegbarPrivat,
-  } = reserves;
+  const EINKOMMENSTEUER_RUECKLAGE_PROZENT = 35;
+  const steuerRuecklage = gewinn > 0 ? roundMoney(gewinn * (EINKOMMENSTEUER_RUECKLAGE_PROZENT / 100)) : 0;
+  const verfuegbarPrivat = roundMoney(gewinn - steuerRuecklage);
 
   const einnahmenSorted = useMemo(() => sortEinnahmenByBelegnr(einnahmen), [einnahmen]);
   const ausgabenSorted = useMemo(() => sortAusgabenByBelegnr(ausgaben), [ausgaben]);
@@ -392,18 +326,8 @@ export function useBookkeepingStore() {
     totalAusgabenNetto,
     gewinn,
     steuerRuecklage,
-    sicherheitsRuecklage,
-    steuerRuecklagePlusSicherheit,
     verfuegbarPrivat,
-    reserveEstProzent,
-    reserveSicherheitProzent,
-    setReserveEstProzent,
-    setReserveSicherheitProzent,
-    einkommensteuerRuecklageProzent: reserveEstProzent,
-    einkommensteuerSicherheitProzent: reserveSicherheitProzent,
-    einkommensteuerGrundfreibetragEuro: GRUNDFREIBETRAG_ALLEINSTEHEND_2026,
-    einkommensteuerGrundfreibetragAbziehbar: grundfreibetragAbziehbar,
-    einkommensteuerBemessungsgrundlage,
+    einkommensteuerRuecklageProzent: EINKOMMENSTEUER_RUECKLAGE_PROZENT,
     getMonthlyData,
     monatsBerichtsjahr,
   };

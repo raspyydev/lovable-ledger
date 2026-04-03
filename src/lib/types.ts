@@ -33,13 +33,7 @@ export interface Kategorie {
   farbe: string;
 }
 
-export type TabId =
-  | 'einnahmen'
-  | 'ausgaben'
-  | 'kategorien'
-  | 'zusammenfassung'
-  | 'ruecklagen'
-  | 'monatsuebersicht';
+export type TabId = 'einnahmen' | 'ausgaben' | 'kategorien' | 'zusammenfassung' | 'monatsuebersicht';
 
 export const DEFAULT_KATEGORIEN: Kategorie[] = [
   { id: '1', name: 'Webdesign', typ: 'einnahme', farbe: '210 100% 50%' },
