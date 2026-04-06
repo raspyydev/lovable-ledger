@@ -6,7 +6,6 @@ import {
   BookOpen,
   CalendarDays,
   Landmark,
-  LayoutDashboard,
   LogOut,
   Mail,
   Menu,
@@ -21,7 +20,6 @@ import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useBookkeepingStore } from "@/lib/store";
 import type { TabId } from "@/lib/types";
@@ -71,23 +69,23 @@ function SidebarNavPanel({
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="border-b border-sidebar-border/80 px-5 py-4 lg:px-6 lg:py-5">
+      <div className="border-b border-sidebar-border/60 px-5 py-5 lg:px-6 lg:py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm lg:h-12 lg:w-12">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
             <BookOpen className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-base font-semibold tracking-tight lg:text-lg">Better Studio</p>
-            <p className="truncate text-sm text-sidebar-foreground/65">Buchhaltung</p>
+            <p className="truncate text-[15px] font-bold tracking-tight">Better Studio</p>
+            <p className="truncate text-xs text-sidebar-foreground/50">Buchhaltung</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 lg:px-4 lg:py-5">
-        <p className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-5 lg:px-4">
+        <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35">
           Navigation
         </p>
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-0.5">
           {navItems.map((item) => {
             const active = activeTab === item.id;
             return (
@@ -96,13 +94,13 @@ function SidebarNavPanel({
                   type="button"
                   onClick={() => go(item.id)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium transition-colors lg:py-3",
+                    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200",
                     active
                       ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   )}
                 >
-                  <item.icon className="h-5 w-5 shrink-0 opacity-90" strokeWidth={2} />
+                  <item.icon className="h-4.5 w-4.5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
                   <span className="truncate">{item.label}</span>
                 </button>
               </li>
@@ -111,30 +109,30 @@ function SidebarNavPanel({
         </ul>
       </nav>
 
-      <div className="border-t border-sidebar-border/80 p-4 lg:p-5">
+      <div className="border-t border-sidebar-border/60 p-4 lg:p-5">
         {user?.email ? (
-          <div className="mb-3 rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 px-3 py-2.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
+          <div className="mb-3 rounded-xl border border-sidebar-border/30 bg-sidebar-accent/20 px-3 py-2.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35">
               Angemeldet
             </p>
-            <p className="mt-1 truncate text-sm font-medium">{user.email}</p>
+            <p className="mt-1 truncate text-sm font-medium text-sidebar-foreground/90">{user.email}</p>
           </div>
         ) : null}
         <button
           type="button"
           disabled={backupSending || !user?.email}
           onClick={() => onManualBackup()}
-          className="mb-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 lg:py-3"
+          className="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50"
         >
-          <Mail className="h-5 w-5 shrink-0" strokeWidth={2} />
+          <Mail className="h-4.5 w-4.5 shrink-0" strokeWidth={1.75} />
           {backupSending ? "Backup wird gesendet …" : "Backup per E-Mail"}
         </button>
         <button
           type="button"
           onClick={() => void onSignOut()}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-base font-medium text-sidebar-foreground transition-colors hover:bg-destructive/12 hover:text-destructive lg:py-3"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
-          <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} />
+          <LogOut className="h-4.5 w-4.5 shrink-0" strokeWidth={1.75} />
           Abmelden
         </button>
       </div>
@@ -158,16 +156,21 @@ function KpiCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/50 bg-card/90 p-3.5 sm:p-4",
-        "shadow-sm transition-shadow duration-200 hover:border-border/70 hover:shadow",
+        "group relative overflow-hidden rounded-2xl border border-border/40 bg-card p-4 sm:p-5",
+        "shadow-card transition-all duration-300 ease-studio hover:border-border/60 hover:shadow-elevated hover:-translate-y-0.5",
       )}
     >
-      <div className="pointer-events-none absolute -right-2 -top-2 opacity-[0.05]">
-        <Icon className="h-12 w-12 sm:h-14 sm:w-14" strokeWidth={1.25} />
+      <div className="pointer-events-none absolute -right-3 -top-3 opacity-[0.04] transition-opacity duration-300 group-hover:opacity-[0.07]">
+        <Icon className="h-16 w-16 sm:h-20 sm:w-20" strokeWidth={1} />
       </div>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={cn("mt-1 font-mono-nums text-lg font-semibold tabular-nums sm:text-xl", valueClass)}>{value}</p>
-      {hint ? <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{hint}</p> : null}
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+          <Icon className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
+        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      </div>
+      <p className={cn("mt-3 font-mono-nums text-xl font-bold tabular-nums sm:text-2xl", valueClass)}>{value}</p>
+      {hint ? <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
@@ -283,47 +286,33 @@ export default function Index() {
       </Sheet>
 
       <div className="dashboard-canvas flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/90 px-4 py-3.5 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 sm:gap-4 sm:px-5 sm:py-4 md:px-6 md:py-[1.125rem]">
+        <header className="flex shrink-0 items-center gap-3 border-b border-border/50 bg-background/95 px-4 py-3 backdrop-blur-lg supports-[backdrop-filter]:bg-background/85 sm:gap-4 sm:px-6 sm:py-3.5 md:px-8 md:py-4">
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-10 w-10 shrink-0 md:hidden"
+            className="h-9 w-9 shrink-0 rounded-lg md:hidden"
             onClick={() => setMobileNavOpen(true)}
             aria-label="Menü öffnen"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4.5 w-4.5" />
           </Button>
 
-          <Separator orientation="vertical" className="hidden h-10 md:block" />
-
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex md:h-11 md:w-11">
-              <LayoutDashboard className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} />
-            </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
-                Dashboard
-              </p>
-              <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl md:text-2xl">{meta.title}</h1>
-              {meta.subtitle ? (
-                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-1 md:text-base">
-                  {meta.subtitle}
-                </p>
-              ) : null}
+              <h1 className="truncate text-lg font-bold tracking-tight sm:text-xl">{meta.title}</h1>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2.5 rounded-xl border border-border/50 bg-card/90 px-3 py-2 text-sm text-muted-foreground shadow-sm sm:flex md:gap-3 md:px-4 md:py-2.5 md:text-base">
-            <CalendarDays className="h-5 w-5 shrink-0 text-primary/80 md:h-6 md:w-6" />
-            <span className="hidden font-medium text-foreground/90 lg:inline">{dateLong}</span>
-            <span className="font-medium text-foreground/90 lg:hidden">{dateLabel}</span>
+          <div className="hidden items-center gap-2 rounded-lg border border-border/40 bg-muted/40 px-3 py-2 text-sm shadow-sm sm:flex md:gap-2.5 md:px-3.5">
+            <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="hidden text-sm font-medium text-muted-foreground lg:inline">{dateLong}</span>
+            <span className="text-sm font-medium text-muted-foreground lg:hidden">{dateLabel}</span>
           </div>
         </header>
 
-        {/* Single scroll region: only scrolls when content exceeds viewport */}
         <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
-          <div className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:space-y-5 sm:px-4 sm:py-5 md:px-5 md:py-6 lg:px-6">
+          <div className="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:space-y-6 sm:px-6 sm:py-6 md:px-8 md:py-7 lg:px-10">
             <motion.div
               initial={false}
               animate={{ opacity: 1 }}
@@ -351,11 +340,11 @@ export default function Index() {
 
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+              transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
               className={cn(
-                "rounded-xl border border-border/50 bg-card/90 p-3.5 shadow-sm sm:p-4 md:p-5",
+                "rounded-2xl border border-border/40 bg-card p-4 sm:p-5 md:p-6",
                 "dashboard-content-shell",
               )}
             >
@@ -366,6 +355,7 @@ export default function Index() {
                   onAdd={store.addEinnahme}
                   onUpdate={store.updateEinnahme}
                   onDelete={store.deleteEinnahme}
+                  onDeleteAll={store.deleteAllEinnahmen}
                   total={store.totalEinnahmen}
                 />
               )}

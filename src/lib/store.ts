@@ -173,6 +173,17 @@ export function useBookkeepingStore() {
     [userId],
   );
 
+  const deleteAllEinnahmen = useCallback(
+    async () => {
+      if (!userId) return;
+      const ids = einnahmen.map((e) => e.id);
+      if (ids.length === 0) return;
+      setEinnahmen([]);
+      await supabase.from('einnahmen').delete().in('id', ids).eq('user_id', userId);
+    },
+    [userId, einnahmen],
+  );
+
   const addAusgabe = useCallback(
     async (a: Ausgabe) => {
       if (!userId) return;
@@ -315,6 +326,7 @@ export function useBookkeepingStore() {
     addEinnahme,
     updateEinnahme,
     deleteEinnahme,
+    deleteAllEinnahmen,
     addAusgabe,
     updateAusgabe,
     deleteAusgabe,

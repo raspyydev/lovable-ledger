@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Pencil, Hash, ClipboardPaste } from 'lucide-react';
+import { Plus, Trash2, Pencil, Hash, ClipboardPaste, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Einnahme, Kategorie, ZAHLUNGSARTEN, EINNAHME_BESCHREIBUNG_PRESETS } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ interface Props {
   onAdd: (e: Einnahme) => void | Promise<void>;
   onUpdate: (e: Einnahme) => void;
   onDelete: (id: string) => void;
+  onDeleteAll: () => void | Promise<void>;
   total: number;
 }
 
@@ -76,10 +77,12 @@ function takeBelegnrSeries(einnahmen: Einnahme[], count: number): string[] {
 
 const BRUTTO_QUICK_ADD = [50, 100, 150, 250, 500] as const;
 
-export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, onDelete, total }: Props) {
+export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, onDelete, onDeleteAll, total }: Props) {
   const [form, setForm] = useState(emptyForm());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importPaste, setImportPaste] = useState('');
   const [importKategorie, setImportKategorie] = useState('');
@@ -168,6 +171,19 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
     setShowForm(true);
   };
 
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      await Promise.resolve(onDeleteAll());
+      toast.success(`${einnahmen.length} Einnahme(n) gelöscht.`);
+      setDeleteAllOpen(false);
+    } catch {
+      toast.error('Löschen fehlgeschlagen.');
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
   const runImport = async () => {
     const { ok, errors } = parseInvoicePaste(importPaste);
     if (errors.length && ok.length === 0) {
@@ -240,6 +256,16 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
           <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">Einnahmen</h2>
         </div>
         <div className="flex flex-wrap gap-2">
+          {einnahmen.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setDeleteAllOpen(true)}
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm font-semibold text-destructive shadow-sm transition-colors ease-studio duration-200 hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+              Alle löschen
+            </button>
+          )}
           <button
             type="button"
             onClick={openImportDialog}
@@ -355,15 +381,46 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
         </DialogContent>
       </Dialog>
 
+      <Dialog open={deleteAllOpen} onOpenChange={setDeleteAllOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <DialogTitle className="text-center">Alle Einnahmen löschen?</DialogTitle>
+            <DialogDescription className="text-center">
+              {einnahmen.length} Einnahme(n) werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <button
+              type="button"
+              onClick={() => setDeleteAllOpen(false)}
+              className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Abbrechen
+            </button>
+            <button
+              type="button"
+              disabled={deletingAll}
+              onClick={() => void handleDeleteAll()}
+              className="rounded-lg bg-destructive px-4 py-2.5 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {deletingAll ? 'Wird gelöscht…' : 'Endgültig löschen'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AnimatePresence>
         {showForm && (
           <motion.form
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
             onSubmit={handleSubmit}
-            className="shadow-card flex flex-col gap-4 overflow-hidden rounded-xl border border-border/40 bg-card p-4 md:gap-5 md:p-5"
+            className="flex flex-col gap-4 overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-card md:gap-5 md:p-6"
           >
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
               <div className="space-y-1">
@@ -548,32 +605,35 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
         )}
       </AnimatePresence>
 
-      <div className="shadow-card overflow-x-auto rounded-xl border border-border/40 bg-card">
-        <div className={`${TABLE_GRID} border-b border-border/50 px-3 py-2.5 sm:px-4`}>
+      <div className="overflow-x-auto rounded-2xl border border-border/40 bg-card shadow-card">
+        <div className={`${TABLE_GRID} border-b border-border/40 bg-muted/30 px-3 py-3 sm:px-4`}>
           {['Datum', 'Beleg', 'Invoice ID', 'Kunde', 'Beschreibung', 'Kategorie', 'Brutto €', 'Zahlung', ''].map((h, i) => (
-            <span key={`${h}-${i}`} className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span key={`${h}-${i}`} className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
               {h}
             </span>
           ))}
         </div>
-        <div className="divide-y divide-border/30">
+        <div className="divide-y divide-border/20">
           <AnimatePresence>
             {einnahmen.length === 0 ? (
-              <div className="px-4 py-10 text-center text-sm text-muted-foreground sm:py-12">Noch keine Einnahmen.</div>
+              <div className="px-4 py-14 text-center">
+                <p className="text-sm font-medium text-muted-foreground">Noch keine Einnahmen</p>
+                <p className="mt-1 text-xs text-muted-foreground/60">Erstelle deine erste Einnahme über den Button oben.</p>
+              </div>
             ) : (
               einnahmen.map((e) => (
                 <motion.div
                   key={e.id}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: -16 }}
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-                  className={`${TABLE_GRID} items-start gap-y-1 px-3 py-3 transition-colors duration-200 ease-studio hover:bg-muted/50 sm:px-4`}
+                  className={`${TABLE_GRID} items-start gap-y-1 px-3 py-3.5 transition-colors duration-150 ease-studio hover:bg-muted/40 sm:px-4`}
                 >
-                  <span className="text-sm font-mono-nums">{e.datum}</span>
-                  <span className="text-sm tabular-nums text-muted-foreground">{e.belegnr}</span>
+                  <span className="text-sm font-mono-nums text-foreground/80">{e.datum}</span>
+                  <span className="text-sm tabular-nums text-muted-foreground/70">{e.belegnr}</span>
                   <span
-                    className="min-w-0 truncate font-mono text-xs text-muted-foreground sm:text-sm"
+                    className="min-w-0 truncate font-mono text-xs text-muted-foreground/70 sm:text-sm"
                     title={e.invoiceId || undefined}
                   >
                     {e.invoiceId?.trim() ? e.invoiceId : '—'}
@@ -583,24 +643,24 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
                       <>
                         <span className="block font-medium text-foreground">{e.kundeName?.trim() || '—'}</span>
                         {e.kundeEmail?.trim() ? (
-                          <span className="block truncate font-mono text-[11px] text-muted-foreground" title={e.kundeEmail}>
+                          <span className="block truncate font-mono text-[11px] text-muted-foreground/60" title={e.kundeEmail}>
                             {e.kundeEmail}
                           </span>
                         ) : null}
                       </>
                     ) : (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-muted-foreground/50">—</span>
                     )}
                   </span>
-                  <span className="min-w-0 break-words text-sm font-medium leading-snug">{e.beschreibung}</span>
-                  <span className="w-fit rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground">{e.kategorie}</span>
-                  <span className="text-sm font-mono-nums font-semibold text-success">+{e.brutto.toFixed(2)}</span>
-                  <span className="text-xs text-muted-foreground">{e.zahlungsart}</span>
-                  <div className="flex items-start justify-end gap-0.5 pt-0.5">
+                  <span className="min-w-0 break-words text-sm font-medium leading-snug text-foreground/90">{e.beschreibung}</span>
+                  <span className="w-fit rounded-lg bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{e.kategorie}</span>
+                  <span className="text-sm font-mono-nums font-bold text-success">+{e.brutto.toFixed(2)}</span>
+                  <span className="rounded-md bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{e.zahlungsart}</span>
+                  <div className="flex items-start justify-end gap-1 pt-0.5">
                     <button
                       type="button"
                       onClick={() => openEdit(e)}
-                      className="p-1 text-muted-foreground transition-colors hover:text-foreground"
+                      className="rounded-md p-1.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
                       title="Bearbeiten"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -608,7 +668,7 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
                     <button
                       type="button"
                       onClick={() => onDelete(e.id)}
-                      className="p-1 text-muted-foreground transition-colors hover:text-destructive"
+                      className="rounded-md p-1.5 text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive"
                       title="Löschen"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -620,14 +680,14 @@ export default function EinnahmenTab({ einnahmen, kategorien, onAdd, onUpdate, o
           </AnimatePresence>
         </div>
         {einnahmen.length > 0 && (
-          <div className={`${TABLE_GRID} border-t border-border bg-muted/30 px-3 py-3 sm:px-4`}>
+          <div className={`${TABLE_GRID} border-t border-border/40 bg-muted/20 px-3 py-3.5 sm:px-4`}>
             <span />
             <span />
             <span />
             <span />
             <span />
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Summe</span>
-            <span className="text-sm font-mono-nums font-semibold text-success">{total.toFixed(2)} €</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Summe</span>
+            <span className="text-sm font-mono-nums font-bold text-success">{total.toFixed(2)} €</span>
             <span />
             <span />
           </div>
