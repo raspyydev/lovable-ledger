@@ -14,6 +14,16 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Space Grotesk"', "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Syne", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
+      },
+      boxShadow: {
+        glow: "0 0 30px hsl(0 84% 60% / 0.3)",
+        "glow-lg": "0 0 50px hsl(0 84% 60% / 0.4)",
+        card: "0 4px 20px hsl(0 0% 0% / 0.3)",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -43,6 +53,7 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          glow: "hsl(var(--accent-glow))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

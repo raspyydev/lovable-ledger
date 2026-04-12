@@ -71,12 +71,12 @@ function SidebarNavPanel({
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="border-b border-sidebar-border/60 px-5 py-5 lg:px-6 lg:py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-accent/25 ring-1 ring-white/10">
             <BookOpen className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-[15px] font-bold tracking-tight">Better Studio</p>
-            <p className="truncate text-xs text-sidebar-foreground/50">Buchhaltung</p>
+            <p className="truncate font-display text-[15px] font-bold tracking-tight">Better Studio</p>
+            <p className="truncate text-xs text-sidebar-foreground/55">Buchhaltung</p>
           </div>
         </div>
       </div>
@@ -96,7 +96,7 @@ function SidebarNavPanel({
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200",
                     active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-accent/20 ring-1 ring-white/10"
                       : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   )}
                 >
@@ -157,7 +157,7 @@ function KpiCard({
     <div
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-border/40 bg-card p-4 sm:p-5",
-        "shadow-card transition-all duration-300 ease-studio hover:border-border/60 hover:shadow-elevated hover:-translate-y-0.5",
+        "shadow-card card-hover-studio transition-all duration-300 ease-studio hover:-translate-y-0.5 hover:shadow-elevated",
       )}
     >
       <div className="pointer-events-none absolute -right-3 -top-3 opacity-[0.04] transition-opacity duration-300 group-hover:opacity-[0.07]">
@@ -237,13 +237,13 @@ export default function Index() {
   if (store.loading) {
     return (
       <div className="flex h-svh items-center justify-center bg-muted/40 p-4">
-        <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-border/50 bg-card px-8 py-10 shadow-md">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Sparkles className="h-6 w-6 animate-pulse text-primary" />
+        <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-border/50 bg-card px-8 py-10 shadow-md ring-1 ring-accent/10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/15 ring-1 ring-accent/20">
+            <Sparkles className="h-6 w-6 animate-pulse text-accent" />
           </div>
           <p className="text-center text-sm font-medium">Wird geladen …</p>
           <div className="h-1 w-36 overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-2/5 animate-pulse rounded-full bg-primary/60" />
+            <div className="h-full w-2/5 animate-pulse rounded-full bg-accent/70" />
           </div>
         </div>
       </div>
@@ -286,7 +286,7 @@ export default function Index() {
       </Sheet>
 
       <div className="dashboard-canvas flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-3 border-b border-border/50 bg-background/95 px-4 py-3 backdrop-blur-lg supports-[backdrop-filter]:bg-background/85 sm:gap-4 sm:px-6 sm:py-3.5 md:px-8 md:py-4">
+        <header className="flex shrink-0 items-center gap-3 border-b border-border/50 bg-background/90 px-4 py-3 backdrop-blur-lg supports-[backdrop-filter]:bg-background/80 sm:gap-4 sm:px-6 sm:py-3.5 md:px-8 md:py-4">
           <Button
             type="button"
             variant="outline"
@@ -300,7 +300,7 @@ export default function Index() {
 
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold tracking-tight sm:text-xl">{meta.title}</h1>
+              <h1 className="truncate font-display text-lg font-bold tracking-tight sm:text-xl">{meta.title}</h1>
             </div>
           </div>
 
@@ -311,7 +311,7 @@ export default function Index() {
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
+        <main className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain">
           <div className="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:space-y-6 sm:px-6 sm:py-6 md:px-8 md:py-7 lg:px-10">
             <motion.div
               initial={false}

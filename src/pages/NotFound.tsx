@@ -14,11 +14,13 @@ const NotFound = () => {
         <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-2">
           Better Studio Buchhaltung
         </p>
-        <h1 className="mb-2 text-4xl font-semibold tracking-tight">404</h1>
+        <h1 className="mb-2 font-display text-4xl font-bold tracking-tight">
+          <span className="gradient-text">404</span>
+        </h1>
         <p className="mb-6 text-muted-foreground">Seite nicht gefunden.</p>
         <a
           href="/"
-          className="text-sm font-medium text-primary underline underline-offset-4 hover:text-primary/90"
+          className="text-sm font-medium text-accent underline decoration-accent/40 underline-offset-4 hover:text-accent/90"
         >
           Zurück zur Buchhaltung
         </a>

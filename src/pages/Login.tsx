@@ -49,15 +49,9 @@ function LoginBackdrop() {
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/30" />
-      <div
-        className="absolute -left-[20%] -top-[30%] h-[70vmin] w-[70vmin] rounded-full bg-primary/15 blur-[100px] animate-login-drift"
-      />
-      <div
-        className="absolute -right-[25%] top-[10%] h-[55vmin] w-[55vmin] rounded-full bg-violet-500/20 blur-[90px] dark:bg-violet-400/10 animate-login-drift-delayed"
-      />
-      <div
-        className="absolute bottom-[-20%] left-[30%] h-[45vmin] w-[45vmin] rounded-full bg-emerald-500/15 blur-[80px] dark:bg-emerald-400/10 animate-login-drift-slow"
-      />
+      <div className="absolute -left-[20%] -top-[30%] h-[70vmin] w-[70vmin] rounded-full bg-accent/20 blur-[100px] animate-login-drift" />
+      <div className="absolute -right-[25%] top-[10%] h-[55vmin] w-[55vmin] rounded-full bg-accent/12 blur-[90px] animate-login-drift-delayed" />
+      <div className="absolute bottom-[-20%] left-[30%] h-[45vmin] w-[45vmin] rounded-full bg-foreground/[0.06] blur-[80px] animate-login-drift-slow" />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
     </div>
   );
@@ -111,7 +105,7 @@ function FieldBlock({
           className={cn(
             "h-11 rounded-xl border-border/60 bg-background/60 pl-10 backdrop-blur-sm transition-shadow",
             "placeholder:text-muted-foreground/60",
-            "focus-visible:border-primary/40 focus-visible:ring-primary/20",
+                    "focus-visible:border-accent/50 focus-visible:ring-accent/25",
             isPassword && "pr-11",
           )}
           {...register(name)}
@@ -186,7 +180,7 @@ export default function Login() {
           >
             <Card className="border-border/50 bg-card/75 shadow-2xl backdrop-blur-xl">
               <CardHeader className="space-y-4 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent/80 text-accent-foreground shadow-lg shadow-glow">
                   <BookOpen className="h-7 w-7" />
                 </div>
                 <div>
@@ -221,7 +215,7 @@ export default function Login() {
         >
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent/80 text-accent-foreground shadow-lg shadow-glow">
                 <BookOpen className="h-5 w-5" />
               </div>
               <div>
@@ -233,10 +227,11 @@ export default function Login() {
             </div>
 
             <h2
-              className="mt-14 max-w-md text-3xl font-semibold leading-tight tracking-tight text-foreground xl:text-4xl"
+              className="mt-14 max-w-md font-display text-3xl font-bold leading-tight tracking-tight text-foreground xl:text-4xl"
               style={{ letterSpacing: "-0.03em" }}
             >
-              Better Studio Buchhaltung
+              Better Studio{" "}
+              <span className="gradient-text clip-text-descenders">Buchhaltung</span>
             </h2>
           </div>
 
@@ -249,8 +244,8 @@ export default function Login() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...spring, delay: reduceMotion ? 0 : 0.12 + i * 0.06 }}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/50 shadow-sm backdrop-blur-sm">
-                  <Icon className="h-4 w-4 text-foreground/80" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-background/50 shadow-sm ring-1 ring-accent/10 backdrop-blur-sm">
+                  <Icon className="h-4 w-4 text-accent" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">{title}</p>
@@ -261,7 +256,7 @@ export default function Login() {
           </ul>
 
           <div className="mt-10 flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" />
             <span>Supabase Auth</span>
           </div>
         </motion.aside>
@@ -273,7 +268,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={spring}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent/80 text-accent-foreground shadow-md shadow-glow">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
@@ -292,7 +287,7 @@ export default function Login() {
           >
             <ShakeWrapper shakeId={shakeId} reduceMotion={Boolean(reduceMotion)}>
               <Card className="relative overflow-hidden border-border/50 bg-card/80 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:shadow-[0_24px_80px_-12px_rgba(0,0,0,0.45)]">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
                 <CardHeader className="space-y-1 border-b border-border/40 bg-muted/20 px-6 pb-5 pt-6">
                   <CardTitle className="text-xl font-semibold tracking-tight">Anmelden bei Better Studio</CardTitle>
                   <CardDescription>E-Mail und Passwort.</CardDescription>
@@ -348,7 +343,7 @@ export default function Login() {
                     <Button
                       type="submit"
                       disabled={pending}
-                      className="group relative h-11 w-full overflow-hidden rounded-xl bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-[1.03] active:scale-[0.99]"
+                      className="group relative h-11 w-full overflow-hidden rounded-xl bg-gradient-to-r from-accent to-accent/85 text-accent-foreground shadow-md shadow-glow transition-all hover:shadow-lg hover:brightness-[1.03] active:scale-[0.99]"
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2 font-medium">
                         {pending ? (

@@ -16,7 +16,7 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
