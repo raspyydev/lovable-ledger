@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   CalendarDays,
+  FileDown,
   Landmark,
   LogOut,
   Mail,
@@ -21,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { downloadFinanzamtPdf } from "@/lib/finanzamtExport";
 import { useBookkeepingStore } from "@/lib/store";
 import type { TabId } from "@/lib/types";
 import EinnahmenTab from "@/components/buchhaltung/EinnahmenTab";
@@ -53,6 +55,8 @@ function SidebarNavPanel({
   afterNavigate,
   backupSending,
   onManualBackup,
+  finanzamtExporting,
+  onFinanzamtDownload,
 }: {
   activeTab: TabId;
   onSelect: (id: TabId) => void;
@@ -61,6 +65,8 @@ function SidebarNavPanel({
   afterNavigate?: () => void;
   backupSending: boolean;
   onManualBackup: () => void;
+  finanzamtExporting: boolean;
+  onFinanzamtDownload: () => void;
 }) {
   const go = (id: TabId) => {
     onSelect(id);
@@ -118,6 +124,15 @@ function SidebarNavPanel({
             <p className="mt-1 truncate text-sm font-medium text-sidebar-foreground/90">{user.email}</p>
           </div>
         ) : null}
+        <button
+          type="button"
+          disabled={finanzamtExporting}
+          onClick={() => onFinanzamtDownload()}
+          className="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+        >
+          <FileDown className="h-4.5 w-4.5 shrink-0" strokeWidth={1.75} />
+          {finanzamtExporting ? "Aufstellung wird erstellt …" : "Download für Finanzamt"}
+        </button>
         <button
           type="button"
           disabled={backupSending || !user?.email}
@@ -179,6 +194,7 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<TabId>("einnahmen");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [backupSending, setBackupSending] = useState(false);
+  const [finanzamtExporting, setFinanzamtExporting] = useState(false);
   const store = useBookkeepingStore();
   const { signOut, user, session } = useAuth();
 
@@ -209,6 +225,41 @@ export default function Index() {
       setBackupSending(false);
     }
   }, [session?.access_token]);
+
+  const downloadFinanzamt = useCallback(() => {
+    setFinanzamtExporting(true);
+    try {
+      downloadFinanzamtPdf({
+        einnahmen: store.einnahmen,
+        ausgaben: store.ausgaben,
+        totalEinnahmen: store.totalEinnahmen,
+        totalAusgabenBrutto: store.totalAusgabenBrutto,
+        totalAusgabenNetto: store.totalAusgabenNetto,
+        gewinn: store.gewinn,
+        steuerRuecklage: store.steuerRuecklage,
+        verfuegbarPrivat: store.verfuegbarPrivat,
+        einkommensteuerRuecklageProzent: store.einkommensteuerRuecklageProzent,
+        accountEmail: user?.email ?? null,
+      });
+      toast.success("Die Aufstellung für das Finanzamt wurde heruntergeladen.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
+      toast.error(msg);
+    } finally {
+      setFinanzamtExporting(false);
+    }
+  }, [
+    store.ausgaben,
+    store.einnahmen,
+    store.einkommensteuerRuecklageProzent,
+    store.gewinn,
+    store.steuerRuecklage,
+    store.totalAusgabenBrutto,
+    store.totalAusgabenNetto,
+    store.totalEinnahmen,
+    store.verfuegbarPrivat,
+    user?.email,
+  ]);
 
   const meta = pageMeta[activeTab];
 
@@ -264,6 +315,8 @@ export default function Index() {
           onSignOut={signOut}
           backupSending={backupSending}
           onManualBackup={() => void requestManualBackup()}
+          finanzamtExporting={finanzamtExporting}
+          onFinanzamtDownload={downloadFinanzamt}
         />
       </aside>
 
@@ -281,6 +334,8 @@ export default function Index() {
             afterNavigate={() => setMobileNavOpen(false)}
             backupSending={backupSending}
             onManualBackup={() => void requestManualBackup()}
+            finanzamtExporting={finanzamtExporting}
+            onFinanzamtDownload={downloadFinanzamt}
           />
         </SheetContent>
       </Sheet>
